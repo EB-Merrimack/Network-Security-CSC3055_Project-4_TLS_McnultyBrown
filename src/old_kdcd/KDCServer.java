@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package kdcd;
+package old_kdcd;
 
 import java.net.Socket;
 import java.net.ServerSocket;
@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import common.SecretStore;
-import kdcd.model.Configuration;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import java.io.File;
@@ -34,6 +33,7 @@ import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
+import old_kdcd.model.Configuration;
 
 /**
  * This class is the main class for the KDC server (daemon).

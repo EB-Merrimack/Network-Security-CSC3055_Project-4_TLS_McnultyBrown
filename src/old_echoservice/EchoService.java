@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package echoservice;
+package old_echoservice;
 
 import merrimackutil.util.NonceCache;
 import java.net.Socket;
@@ -32,7 +32,7 @@ import java.io.InvalidObjectException;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
-import echoservice.model.Configuration;
+import old_echoservice.model.Configuration;
 
 /**
  * This class is the main class for the service.
