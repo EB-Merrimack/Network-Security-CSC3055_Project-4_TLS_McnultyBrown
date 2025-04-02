@@ -19,12 +19,12 @@ package old_kdcd;
 import java.io.IOException;
 import java.net.Socket;
 
-import common.SecretStore;
-import common.protocol.ProtocolChannel;
-import common.protocol.ProtocolRole;
-import common.protocol.chap.CHAPProto;
-import common.protocol.ticket.TicketProto;
 import merrimackutil.util.NonceCache;
+import old_common.SecretStore;
+import old_common.protocol.ProtocolChannel;
+import old_common.protocol.ProtocolRole;
+import old_common.protocol.chap.CHAPProto;
+import old_common.protocol.ticket.TicketProto;
 
 /**
  * Handles an new KDC connection.

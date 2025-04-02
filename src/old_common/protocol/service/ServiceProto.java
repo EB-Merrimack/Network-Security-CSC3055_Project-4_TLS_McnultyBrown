@@ -14,9 +14,14 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package common.protocol.service;
+package old_common.protocol.service;
 
 import merrimackutil.util.NonceCache;
+import old_common.protocol.Message;
+import old_common.protocol.Protocol;
+import old_common.protocol.ProtocolChannel;
+import old_common.protocol.ProtocolRole;
+import old_common.protocol.ticket.Ticket;
 
 import java.io.InvalidObjectException;
 import java.security.SecureRandom;
@@ -30,12 +35,6 @@ import javax.crypto.Cipher;
 import java.util.Base64;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import common.protocol.Message;
-import common.protocol.Protocol;
-import common.protocol.ProtocolChannel;
-import common.protocol.ProtocolRole;
-import common.protocol.ticket.Ticket;
 
 import java.nio.charset.StandardCharsets;
 

@@ -23,7 +23,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import common.SecretStore;
 import merrimackutil.json.JsonIO;
 import merrimackutil.json.types.JSONObject;
 import java.io.File;
@@ -33,6 +32,7 @@ import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
+import old_common.SecretStore;
 import old_kdcd.model.Configuration;
 
 /**

@@ -14,13 +14,13 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package common.protocol.service;
+package old_common.protocol.service;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import java.io.InvalidObjectException;
+import old_common.protocol.Message;
 
-import common.protocol.Message;
+import java.io.InvalidObjectException;
 
 /**
  * This represents a challenge response message

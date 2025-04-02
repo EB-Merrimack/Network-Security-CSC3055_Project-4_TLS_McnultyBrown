@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package common.protocol.service;
+package old_common.protocol.service;
 
 import java.nio.charset.StandardCharsets;
 import javax.crypto.Cipher;

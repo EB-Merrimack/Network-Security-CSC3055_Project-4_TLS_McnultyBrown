@@ -27,20 +27,22 @@ import javax.crypto.BadPaddingException;
 import merrimackutil.net.hostdb.HostsDatabase;
 
 import java.io.InvalidObjectException;
-import common.SecretStore;
-import common.protocol.ProtocolChannel;
-import common.protocol.ProtocolRole;
-import common.protocol.chap.CHAPProto;
-import common.protocol.service.ServiceMessage;
-import common.protocol.service.ServiceMessageBuilder;
-import common.protocol.service.ServiceProto;
-import common.protocol.ticket.SessionKey;
-import common.protocol.ticket.Ticket;
-import common.protocol.ticket.TicketProto;
+
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
+import old_common.SecretStore;
+import old_common.protocol.ProtocolChannel;
+import old_common.protocol.ProtocolRole;
+import old_common.protocol.chap.CHAPProto;
+import old_common.protocol.service.ServiceMessage;
+import old_common.protocol.service.ServiceMessageBuilder;
+import old_common.protocol.service.ServiceProto;
+import old_common.protocol.ticket.SessionKey;
+import old_common.protocol.ticket.Ticket;
+import old_common.protocol.ticket.TicketProto;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Console;

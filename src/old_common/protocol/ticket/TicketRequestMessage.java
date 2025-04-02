@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package common.protocol.ticket;
+package old_common.protocol.ticket;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
+import old_common.protocol.Message;
 
 import java.io.InvalidObjectException;
-
-import common.protocol.Message;
 
 /**
  * This represents a ticket request message for the ticket protocol.

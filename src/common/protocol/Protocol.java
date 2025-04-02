@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol;
+package common.protocol;
 
 /**
  * A basic protocol class. It maintains the role associated with the instance

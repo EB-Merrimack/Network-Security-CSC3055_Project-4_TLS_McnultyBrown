@@ -14,18 +14,18 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package common.protocol.ticket;
+package old_common.protocol.ticket;
 
 import java.io.InvalidObjectException;
 import java.security.SecureRandom;
 import java.security.InvalidKeyException;
 import javax.crypto.IllegalBlockSizeException;
 
-import common.SecretStore;
-import common.protocol.Message;
-import common.protocol.Protocol;
-import common.protocol.ProtocolChannel;
-import common.protocol.ProtocolRole;
+import old_common.SecretStore;
+import old_common.protocol.Message;
+import old_common.protocol.Protocol;
+import old_common.protocol.ProtocolChannel;
+import old_common.protocol.ProtocolRole;
 
 import javax.crypto.BadPaddingException;
 import java.security.InvalidAlgorithmParameterException;

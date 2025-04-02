@@ -14,20 +14,28 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol;
+package common.protocol;
 
 /**
- * This enumeration describes a role.
+ * This interface defines an authentication protocol.
+ * This is a specialization of a protocol that supports an
+ * authentication method.
  */
-public enum ProtocolRole
-{
-  /**
-   * The client.
-   */
-   CLIENT,
+ public abstract class AuthenticationProtocol extends Protocol
+ {
+   /**
+    * Sets the role of the user for the authentication protocol
+    * @param role a protocol role.
+    */
+   public AuthenticationProtocol(ProtocolRole role)
+   {
+     super(role);
+   }
 
    /**
-    * The server.
+    * Runs the authentication protocol using the specified {@code channel}
+    * @param channel the channel to run the protocol over.
+    * @return true if the user is authenticated; otherwise, false.
     */
-   SERVER
-}
+   public abstract boolean authenticate(ProtocolChannel channel);
+ }

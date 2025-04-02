@@ -14,18 +14,16 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package common.protocol.chap;
+package old_common.protocol.chap;
 
 import merrimackutil.util.NonceCache;
+import old_common.SecretStore;
+import old_common.protocol.AuthenticationProtocol;
+import old_common.protocol.Message;
+import old_common.protocol.ProtocolChannel;
+import old_common.protocol.ProtocolRole;
 
 import java.util.Arrays;
-
-import common.SecretStore;
-import common.protocol.AuthenticationProtocol;
-import common.protocol.Message;
-import common.protocol.ProtocolChannel;
-import common.protocol.ProtocolRole;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.io.InvalidObjectException;
