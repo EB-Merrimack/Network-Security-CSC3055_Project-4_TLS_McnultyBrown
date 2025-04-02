@@ -50,7 +50,7 @@ import java.util.Scanner;
  * This file implements the KDC client.
  * @author Zach Kissel
  */
-public class KDCClient
+public class Old_KDCClient
 {
   private static ProtocolChannel channel = null;
   private static String serviceName = null;
