@@ -1,0 +1,19 @@
+{
+   "posts" : [
+      {
+         "type" : "Post",
+         "message" : "eGkMYapsbQJwJahZr5COuyJiemeLrFBefJI=",
+         "wrappedkey" : "XoKax/TnUMlakbiMRQWf0dYlubrYYCULe3l42Dqo11cCkHY6RYBJeCdtqptYjVYVujNPTBY1bqHJ/TkDRSgnSQKTyILd/6QWqSR0B6d+W7dpbQWJKLgQlsF8dg7dvpvCttoVwCw03SV2d/RVz4Ni9ceEInFIMjG9E963qPIVKP0=",
+         "user" : "kisselz",
+         "iv" : "NosTrZ3LcKR3pt4aEISzqg=="
+      },
+      {
+         "type" : "Post",
+         "message" : "F0LiTV1z3Ax66y53SvcrKdA8h8ujOk9A7iws",
+         "wrappedkey" : "AuOLX1pXTjQocJBlCwgCBMj2XXugD9/hodNjoLVeuDMAIhkI7iXaSXVyAOa/tpomIsjTWWtDJbQHQQ1ssXr8TvuqQQZSPzDb6Mfxg/6IFqsPtDbLXrIdL2aUBmu5VbA3iH1Oamnp4P6peISrdFWw+KJJjJlnOmE1b2NrqSjMPKM=",
+         "user" : "bob",
+         "iv" : "yAonLWrso3vkXB6VljVqbg=="
+      }
+   ]
+}
+
