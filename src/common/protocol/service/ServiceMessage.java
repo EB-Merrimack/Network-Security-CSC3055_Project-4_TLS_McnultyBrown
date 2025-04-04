@@ -14,72 +14,96 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol.service;
+package common.protocol.service;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import old_common.protocol.Message;
 
 import java.io.InvalidObjectException;
 
+import java.nio.charset.StandardCharsets;
+import javax.crypto.Cipher;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidKeyException;
+import java.util.Base64;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
+import common.protocol.Message;
+
+import java.security.InvalidAlgorithmParameterException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.BadPaddingException;
+
 /**
- * This represents a challenge response message
+ * This represents a service message.
  * @author Zach Kissel
  */
- public class HandshakeChallengeResponseMessage implements Message
+ public class ServiceMessage implements Message
  {
-   private final String TYPE = "Handshake Challenge Response";
-   private String encResp;
+   private final String TYPE = "Service Message";
+   private String encPayload;
    private String nonce;
    private String service;
    private String iv;
-
+   private String id;
    /**
     * Constructs an empty ticket request with the service
     * name set to {@code null}
     */
-    public HandshakeChallengeResponseMessage()
+    public ServiceMessage()
     {
       this.service = null;
       this.nonce = null;
-      this.encResp = null;
+      this.encPayload = null;
       this.iv = null;
+      this.id = null;
     }
 
    /**
-    * Constructs a new ticket request message for
-    * service {@code service}.
+    * Constructs a new service message
     * @param service the name of the service.
+    * @param
     */
-    public HandshakeChallengeResponseMessage(String service, String encResp,
+    public ServiceMessage(String service, String id, String encPayload,
        String nonce, String iv)
     {
       this.service = service;
-      this.encResp = encResp;
       this.nonce = nonce;
+      this.encPayload = encPayload;
       this.iv = iv;
+      this.id = id;
     }
 
     /**
-     * Constructs a new client hello message from
+     * Constructs a new service messagefrom
      * a JSON object.
      * @param obj the JSON object representing the request.
      * @throws InvalidObjectException if the object is not a ticket request.
      */
-     public HandshakeChallengeResponseMessage(JSONObject obj) throws
-        InvalidObjectException
+     public ServiceMessage(JSONObject obj) throws InvalidObjectException
      {
        deserialize(obj);
      }
 
    /**
-    * Gets the service name from the message.
-    * @return the service name
+    * Gets the client name from the message.
+    * @return the client name
     */
-   public String getservice()
+   public String getClient()
    {
-     return service;
+     return id;
    }
+
+   /**
+    * Gets the service name.
+    * @return the service name.
+    */
+    public String getServiceName()
+    {
+      return service;
+    }
 
    /**
     * Get the nonce from the message.
@@ -99,13 +123,58 @@ import java.io.InvalidObjectException;
       return iv;
     }
 
+
    /**
-    * Get the encrypted response from the message.
-    * @return base64 encoded form of the encrypted response.
+    * Get the encrypted payload from the message.
+    * @return base64 encoded form of the encrypted payload.
     */
-    public String getEncryptedResponse()
+    public String getEncryptedPayload()
     {
-      return encResp;
+      return encPayload;
+    }
+
+    public String getDecryptedPayload(byte[] sessionKey)
+    {
+      Cipher cipher = null;
+      byte[] payload;
+
+      try
+      {
+        cipher = Cipher.getInstance("AES/GCM/NoPadding");
+      }
+      catch (NoSuchAlgorithmException | NoSuchPaddingException ex)
+      {
+        System.out.println(
+            "Fatal Error: AES/GCM/NoPadding algorithm not found.");
+        System.out.println(ex);
+        System.exit(1);
+      }
+
+      try
+      {
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(sessionKey, "AES"),
+          new GCMParameterSpec(128, Base64.getDecoder().decode(iv)));
+      }
+      catch (InvalidKeyException | InvalidAlgorithmParameterException ex)
+      {
+        System.out.println(ex);
+        return null;
+      }
+
+      try
+      {
+        cipher.updateAAD(id.getBytes(StandardCharsets.US_ASCII));
+        cipher.updateAAD(service.getBytes(StandardCharsets.US_ASCII));
+        cipher.updateAAD(Base64.getDecoder().decode(nonce));
+        payload = cipher.doFinal(Base64.getDecoder().decode(encPayload));
+      }
+      catch (IllegalBlockSizeException | BadPaddingException ex)
+      {
+        System.out.println(ex);
+        return null;
+      }
+
+      return new String(payload);
     }
 
    /**
@@ -127,7 +196,7 @@ import java.io.InvalidObjectException;
    */
   public Message decode(JSONObject obj) throws InvalidObjectException
   {
-   return new HandshakeChallengeResponseMessage(obj);
+   return new ServiceMessage(obj);
   }
 
    /**
@@ -138,26 +207,27 @@ import java.io.InvalidObjectException;
    public void deserialize(JSONType obj) throws InvalidObjectException
    {
      JSONObject msg;
-     String[] keys = {"type", "service", "nonce", "encrypted-response", "iv"};
+     String[] keys = {"type", "service", "nonce", "encrypted-payload", "iv", "id"};
      if (obj.isObject())
      {
        msg = (JSONObject) obj;
-      
+
        msg.checkValidity(keys);
        
-       // Validate the type.
+       // Validate type.
        if (!msg.getString("type").equals(TYPE))
          throw new InvalidObjectException(
-            "Invalid Message -- handshake challenge response message expected!");
+            "Invalid Message -- service message expected!");
        
        service = msg.getString("service");
        nonce = msg.getString("nonce");
-       encResp = msg.getString("encrypted-response");
+       encPayload = msg.getString("encrypted-payload");
        iv = msg.getString("iv");
+       id = msg.getString("id");
      }
      else
        throw new InvalidObjectException(
-          "Handshake challenge response -- recieved array, expected Object.");
+          "service message response -- recieved array, expected Object.");
    }
 
    /**
@@ -170,7 +240,8 @@ import java.io.InvalidObjectException;
 
      obj.put("type", TYPE);
      obj.put("service", service);
-     obj.put("encrypted-response", encResp);
+     obj.put("id", id);
+     obj.put("encrypted-payload", encPayload);
      obj.put("nonce", nonce);
      obj.put("iv", iv);
      return obj;
@@ -182,6 +253,6 @@ import java.io.InvalidObjectException;
     */
     public String toString()
     {
-      return "Handshake Challenge Response";
+      return "Service Message";
     }
  }

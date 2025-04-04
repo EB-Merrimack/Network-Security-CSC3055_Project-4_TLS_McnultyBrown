@@ -21,13 +21,13 @@ import java.io.InvalidObjectException;
 import java.net.Socket;
 import java.util.Base64;
 
+import common.SecretStore;
+import common.protocol.ProtocolChannel;
+import common.protocol.ProtocolRole;
+import common.protocol.service.ServiceMessage;
+import common.protocol.service.ServiceMessageBuilder;
+import common.protocol.service.ServiceProto;
 import merrimackutil.util.NonceCache;
-import old_common.SecretStore;
-import old_common.protocol.ProtocolChannel;
-import old_common.protocol.ProtocolRole;
-import old_common.protocol.service.ServiceMessage;
-import old_common.protocol.service.ServiceMessageBuilder;
-import old_common.protocol.service.ServiceProto;
 
 public class ConnectionHandler implements Runnable {
 

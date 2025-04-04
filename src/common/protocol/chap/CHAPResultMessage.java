@@ -14,58 +14,61 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol.chap;
+package common.protocol.chap;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import old_common.protocol.Message;
 
 import java.io.InvalidObjectException;
 
+import common.protocol.Message;
+
 /**
- * This class represents a CHAP initial message.
+ * This class represents a CHAP result message.
  * @author Zach Kissel
  */
- public class CHAPInitialMessage implements Message
+ public class CHAPResultMessage implements Message
  {
-   private String id;  // The id associated with the run.
-   private final String TYPE = "RFC1994 Initial";
+   private boolean isOK;  // The result of the protocol.
+   private final String TYPE = "RFC1994 Result";
+
 
    /**
-    * Constructs a new initial message with a {@code null} identity.
+    * Constructs an empty result message, with the result of {@code false}
     */
-   public CHAPInitialMessage()
-   {
-     id = null;
-   }
+    public CHAPResultMessage()
+    {
+      isOK = false;
+    }
 
    /**
-    * Construct a initial message from a JSON object.
+    * Construct a result message from a JSON object.
     * @param obj the JSON object representing a CHAP challenge message.
     * @throws InvalidObjectException if {@code obj} is not a valid
     * CHAP challenge message.
     */
-   public CHAPInitialMessage(JSONObject obj) throws InvalidObjectException
+   public CHAPResultMessage(JSONObject obj) throws InvalidObjectException
    {
      deserialize(obj);
    }
 
    /**
-    * Construct a new initial message with identity {@code id}.
-    * @param id the identity of the user.
+    * Construct a new response message that is OK if {@code isOK} is true and
+    * NOK otherwise.
+    * @param isOK true if CHAP was successful and false otherwise.
     */
-   public CHAPInitialMessage(String id)
+   public CHAPResultMessage(boolean isOK)
    {
-     this.id = id;
+     this.isOK = isOK;
    }
 
    /**
-    * Get the identity from the message.
-    * @return the identity associated with the message.
+    * If the result of the protocol was successful.
+    * @return true if the protocol run was successful and false otherwise.
     */
-    public String getIdentity()
+    public boolean isSuccess()
     {
-      return this.id;
+      return this.isOK;
     }
 
     /**
@@ -87,7 +90,7 @@ import java.io.InvalidObjectException;
     */
    public Message decode(JSONObject obj) throws InvalidObjectException
    {
-    return new CHAPInitialMessage(obj);
+    return new CHAPResultMessage(obj);
    }
 
     /**
@@ -98,23 +101,23 @@ import java.io.InvalidObjectException;
     public void deserialize(JSONType obj) throws InvalidObjectException
     {
       JSONObject msg;
-      String[] keys = {"type", "id"};
+      String[] keys = {"type", "result"};
+
       if (obj.isObject())
       {
         msg = (JSONObject) obj;
-
         msg.checkValidity(keys);
         
-        // Validate message type.
+        // Validate the type.
         if (!msg.getString("type").equals(TYPE))
           throw new InvalidObjectException(
-             "Invalid CHAP Message -- initial message expected!");
+             "Invalid CHAP Message -- result message expected!");
         
-        id = msg.getString("id");
+        isOK = msg.getBoolean("result");
       }
       else
         throw new InvalidObjectException(
-           "CHAP initial message -- recieved array, expected Object.");
+           "CHAP result message -- recieved array, expected Object.");
     }
 
     /**
@@ -126,7 +129,7 @@ import java.io.InvalidObjectException;
       JSONObject obj = new JSONObject();
 
       obj.put("type", TYPE);
-      obj.put("id", id);
+      obj.put("result", isOK);
 
       return obj;
     }
@@ -137,6 +140,6 @@ import java.io.InvalidObjectException;
      */
      public String toString()
      {
-       return "RFC1994 Initial (" + id + ")";
+       return "RFC1994 Result (" + isOK + ")";
      }
  }
