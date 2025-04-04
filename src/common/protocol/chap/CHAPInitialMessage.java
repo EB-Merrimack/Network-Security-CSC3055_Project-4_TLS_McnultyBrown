@@ -14,61 +14,59 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol.chap;
-
-import java.util.Base64;
+package common.protocol.chap;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import old_common.protocol.Message;
 
 import java.io.InvalidObjectException;
 
+import common.protocol.Message;
+
 /**
- * This class represents a CHAP challenge message.
+ * This class represents a CHAP initial message.
  * @author Zach Kissel
  */
- public class CHAPChallengeMessage implements Message
+ public class CHAPInitialMessage implements Message
  {
-   private byte[] challenge;  // The challenge associated with the run.
-   private final String TYPE = "RFC1994 Challenge";
+   private String id;  // The id associated with the run.
+   private final String TYPE = "RFC1994 Initial";
 
    /**
-    * Constructs a new challenge message with a null challenge.
+    * Constructs a new initial message with a {@code null} identity.
     */
-    public CHAPChallengeMessage()
-    {
-      challenge = null;
-    }
+   public CHAPInitialMessage()
+   {
+     id = null;
+   }
 
    /**
-    * Construct a new challenge message from a JSON object.
+    * Construct a initial message from a JSON object.
     * @param obj the JSON object representing a CHAP challenge message.
     * @throws InvalidObjectException if {@code obj} is not a valid
     * CHAP challenge message.
     */
-   public CHAPChallengeMessage(JSONObject obj) throws InvalidObjectException
+   public CHAPInitialMessage(JSONObject obj) throws InvalidObjectException
    {
      deserialize(obj);
    }
 
    /**
-    * Construct a new challenge message with challenge
-    * {@code challenge}.
-    * @param challenge the challenge.
+    * Construct a new initial message with identity {@code id}.
+    * @param id the identity of the user.
     */
-   public CHAPChallengeMessage(byte[] challenge)
+   public CHAPInitialMessage(String id)
    {
-     this.challenge = challenge;
+     this.id = id;
    }
 
    /**
-    * Get the challenge from the message.
-    * @return the array of bytes representing the challenge.
+    * Get the identity from the message.
+    * @return the identity associated with the message.
     */
-    public byte[] getChallenge()
+    public String getIdentity()
     {
-      return this.challenge;
+      return this.id;
     }
 
     /**
@@ -90,7 +88,7 @@ import java.io.InvalidObjectException;
     */
    public Message decode(JSONObject obj) throws InvalidObjectException
    {
-    return new CHAPChallengeMessage(obj);
+    return new CHAPInitialMessage(obj);
    }
 
     /**
@@ -101,23 +99,23 @@ import java.io.InvalidObjectException;
     public void deserialize(JSONType obj) throws InvalidObjectException
     {
       JSONObject msg;
-      String[] keys = {"type", "challenge"};
-
+      String[] keys = {"type", "id"};
       if (obj.isObject())
       {
         msg = (JSONObject) obj;
-        msg.checkValidity(keys);
 
-        // Validate type of message. 
+        msg.checkValidity(keys);
+        
+        // Validate message type.
         if (!msg.getString("type").equals(TYPE))
           throw new InvalidObjectException(
-             "Invalid CHAP Message -- challenge message expected!");
+             "Invalid CHAP Message -- initial message expected!");
         
-        challenge = Base64.getDecoder().decode(msg.getString("challenge"));
+        id = msg.getString("id");
       }
       else
         throw new InvalidObjectException(
-           "CHAP challenge message -- recieved array, expected Object.");
+           "CHAP initial message -- recieved array, expected Object.");
     }
 
     /**
@@ -129,7 +127,7 @@ import java.io.InvalidObjectException;
       JSONObject obj = new JSONObject();
 
       obj.put("type", TYPE);
-      obj.put("challenge", Base64.getEncoder().encodeToString(challenge));
+      obj.put("id", id);
 
       return obj;
     }
@@ -140,7 +138,6 @@ import java.io.InvalidObjectException;
      */
      public String toString()
      {
-       return "RFC1994 Challenge (" +
-           Base64.getEncoder().encodeToString(challenge) + ")";
+       return "RFC1994 Initial (" + id + ")";
      }
  }

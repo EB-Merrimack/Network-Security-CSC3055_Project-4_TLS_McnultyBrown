@@ -14,60 +14,61 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol.chap;
+package common.protocol.chap;
 
+import java.util.Base64;
+
+import common.protocol.Message;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import old_common.protocol.Message;
 
 import java.io.InvalidObjectException;
 
 /**
- * This class represents a CHAP result message.
+ * This class represents a CHAP challenge message.
  * @author Zach Kissel
  */
- public class CHAPResultMessage implements Message
+ public class CHAPChallengeMessage implements Message
  {
-   private boolean isOK;  // The result of the protocol.
-   private final String TYPE = "RFC1994 Result";
-
+   private byte[] challenge;  // The challenge associated with the run.
+   private final String TYPE = "RFC1994 Challenge";
 
    /**
-    * Constructs an empty result message, with the result of {@code false}
+    * Constructs a new challenge message with a null challenge.
     */
-    public CHAPResultMessage()
+    public CHAPChallengeMessage()
     {
-      isOK = false;
+      challenge = null;
     }
 
    /**
-    * Construct a result message from a JSON object.
+    * Construct a new challenge message from a JSON object.
     * @param obj the JSON object representing a CHAP challenge message.
     * @throws InvalidObjectException if {@code obj} is not a valid
     * CHAP challenge message.
     */
-   public CHAPResultMessage(JSONObject obj) throws InvalidObjectException
+   public CHAPChallengeMessage(JSONObject obj) throws InvalidObjectException
    {
      deserialize(obj);
    }
 
    /**
-    * Construct a new response message that is OK if {@code isOK} is true and
-    * NOK otherwise.
-    * @param isOK true if CHAP was successful and false otherwise.
+    * Construct a new challenge message with challenge
+    * {@code challenge}.
+    * @param challenge the challenge.
     */
-   public CHAPResultMessage(boolean isOK)
+   public CHAPChallengeMessage(byte[] challenge)
    {
-     this.isOK = isOK;
+     this.challenge = challenge;
    }
 
    /**
-    * If the result of the protocol was successful.
-    * @return true if the protocol run was successful and false otherwise.
+    * Get the challenge from the message.
+    * @return the array of bytes representing the challenge.
     */
-    public boolean isSuccess()
+    public byte[] getChallenge()
     {
-      return this.isOK;
+      return this.challenge;
     }
 
     /**
@@ -89,7 +90,7 @@ import java.io.InvalidObjectException;
     */
    public Message decode(JSONObject obj) throws InvalidObjectException
    {
-    return new CHAPResultMessage(obj);
+    return new CHAPChallengeMessage(obj);
    }
 
     /**
@@ -100,23 +101,23 @@ import java.io.InvalidObjectException;
     public void deserialize(JSONType obj) throws InvalidObjectException
     {
       JSONObject msg;
-      String[] keys = {"type", "result"};
+      String[] keys = {"type", "challenge"};
 
       if (obj.isObject())
       {
         msg = (JSONObject) obj;
         msg.checkValidity(keys);
-        
-        // Validate the type.
+
+        // Validate type of message. 
         if (!msg.getString("type").equals(TYPE))
           throw new InvalidObjectException(
-             "Invalid CHAP Message -- result message expected!");
+             "Invalid CHAP Message -- challenge message expected!");
         
-        isOK = msg.getBoolean("result");
+        challenge = Base64.getDecoder().decode(msg.getString("challenge"));
       }
       else
         throw new InvalidObjectException(
-           "CHAP result message -- recieved array, expected Object.");
+           "CHAP challenge message -- recieved array, expected Object.");
     }
 
     /**
@@ -128,7 +129,7 @@ import java.io.InvalidObjectException;
       JSONObject obj = new JSONObject();
 
       obj.put("type", TYPE);
-      obj.put("result", isOK);
+      obj.put("challenge", Base64.getEncoder().encodeToString(challenge));
 
       return obj;
     }
@@ -139,6 +140,7 @@ import java.io.InvalidObjectException;
      */
      public String toString()
      {
-       return "RFC1994 Result (" + isOK + ")";
+       return "RFC1994 Challenge (" +
+           Base64.getEncoder().encodeToString(challenge) + ")";
      }
  }

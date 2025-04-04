@@ -14,73 +14,60 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol.service;
+package common.protocol.ticket;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
-import old_common.protocol.Message;
-import old_common.protocol.ticket.Ticket;
 
 import java.io.InvalidObjectException;
 
+import common.protocol.Message;
+
 /**
- * This represents a client hello message
+ * This represents a ticket error message for the ticket protocol.
  * @author Zach Kissel
  */
- public class ClientHelloMessage implements Message
+ public class TicketErrorMessage implements Message
  {
-   private final String TYPE = "Client Hello";
-   private Ticket ticket;
-   private String nonce;
+   private final String TYPE = "Ticket Error";
+   private String reason;   // The reason for the error.
 
    /**
     * Constructs an empty ticket request with the service
     * name set to {@code null}
     */
-    public ClientHelloMessage()
+    public TicketErrorMessage()
     {
-      this.ticket = null;
-      this.nonce = null;
+      reason = null;
     }
 
    /**
-    * Constructs a new ticket request message for
-    * service {@code service}.
-    * @param service the name of the service.
+    * Constructs a new ticket error message with the state reason.
+    * @param reason the reason for the error.
     */
-    public ClientHelloMessage(Ticket ticket, String nonce)
+    public TicketErrorMessage(String reason)
     {
-      this.ticket = ticket;
-      this.nonce = nonce;
+      this.reason = reason;
     }
 
     /**
-     * Constructs a new client hello message from
+     * Constructs a new ticket error message from
      * a JSON object.
      * @param obj the JSON object representing the request.
      * @throws InvalidObjectException if the object is not a ticket request.
      */
-     public ClientHelloMessage(JSONObject obj) throws InvalidObjectException
+     public TicketErrorMessage(JSONObject obj) throws InvalidObjectException
      {
        deserialize(obj);
      }
 
    /**
-    * Gets the ticket from the message.
-    * @return the ticket.
+    * Get the reason for the error
+    * @return the reason for the error.
     */
-   public Ticket getTicket()
-   {
-     return ticket;
-   }
-
-   /**
-    * Get the nonce from the message.
-    * @return base64 encoded form of the nonce.
-    */
-    public String getNonce()
+    public String getReason()
     {
-      return nonce;
+      return reason;
     }
 
    /**
@@ -102,7 +89,7 @@ import java.io.InvalidObjectException;
    */
   public Message decode(JSONObject obj) throws InvalidObjectException
   {
-   return new ClientHelloMessage(obj);
+   return new TicketErrorMessage(obj);
   }
 
    /**
@@ -113,7 +100,7 @@ import java.io.InvalidObjectException;
    public void deserialize(JSONType obj) throws InvalidObjectException
    {
      JSONObject msg;
-     String[] keys = {"type", "ticket", "nonce"};
+     String[] keys = {"type", "reason"};
 
      if (obj.isObject())
      {
@@ -121,17 +108,16 @@ import java.io.InvalidObjectException;
 
        msg.checkValidity(keys);
        
-       // Validate the type.
+       // Validate type.
        if (!msg.getString("type").equals(TYPE))
          throw new InvalidObjectException(
-            "Invalid Message -- client hello message expected!");
+            "Invalid Ticket Message -- error message expected!");
        
-       ticket = new Ticket(msg.getObject("ticket"));
-       nonce = msg.getString("nonce");
+       reason = msg.getString("reason");
      }
      else
        throw new InvalidObjectException(
-          "Ticket request message -- recieved array, expected Object.");
+          "Ticket error message -- recieved array, expected Object.");
    }
 
    /**
@@ -143,8 +129,7 @@ import java.io.InvalidObjectException;
      JSONObject obj = new JSONObject();
 
      obj.put("type", TYPE);
-     obj.put("ticket", ticket.toJSONType());
-     obj.put("nonce", nonce);
+     obj.put("reason", reason);
      return obj;
    }
 
@@ -154,6 +139,6 @@ import java.io.InvalidObjectException;
     */
     public String toString()
     {
-      return "Client Hello";
+      return "Ticket Error (" + reason + ")";
     }
  }

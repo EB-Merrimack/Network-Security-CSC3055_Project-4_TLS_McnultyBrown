@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License 
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package old_common.protocol.ticket;
+package common.protocol.ticket;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
