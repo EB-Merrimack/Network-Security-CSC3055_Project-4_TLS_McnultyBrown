@@ -34,22 +34,7 @@ public class Board implements JSONSerializable {
         return posts;
     }
 
-    @Override
-    public void deserialize(JSONType obj) throws InvalidObjectException {
-        if (!obj.isObject()) {
-            throw new InvalidObjectException("Board expects a JSONObject.");
-        }
-
-        JSONObject boardObj = (JSONObject) obj;
-        boardObj.checkValidity(new String[]{"posts"});
-
-        JSONArray postArray = boardObj.getArray("posts");
-        for (int i = 0; i < postArray.size(); i++) {
-            JSONObject postObj = postArray.getObject(i);
-            posts.add(new Post(postObj));
-        }
-    }
-
+ 
     @Override
     public JSONType toJSONType() {
         JSONObject boardObj = new JSONObject();
@@ -73,19 +58,38 @@ public class Board implements JSONSerializable {
                 jsonContent.append(line);
             }
     
-            // Create a JSONObject from the string content
+            // Convert the JSON content into a JSONObject
             JSONObject jsonObj = new JSONObject();
-    
-            // Assuming the content is a valid JSON string, now put the data into the JSONObject
-            // Using put to populate the JSONObject with a key-value pair
             jsonObj.put("boardData", jsonContent.toString());
     
-            // Deserialize the JSON content into the Board object
+            // Deserialize the board data
             deserialize(jsonObj);
+    
         } catch (IOException  e) {
             e.printStackTrace();
         }
     }
+    
+    @Override
+    public void deserialize(JSONType obj) throws InvalidObjectException {
+        if (!obj.isObject()) {
+            throw new InvalidObjectException("Board expects a JSONObject.");
+        }
+    
+        JSONObject boardObj = (JSONObject) obj;
+        boardObj.checkValidity(new String[]{"posts"});
+    
+        // Get the array of posts from the board JSON object
+        JSONArray postArray = boardObj.getArray("posts");
+        for (int i = 0; i < postArray.size(); i++) {
+            JSONObject postObj = postArray.getObject(i);
+    
+            // Assuming you have a Post constructor that takes a JSONObject
+            Post post = new Post(postObj);
+            posts.add(post);
+        }
+    }
+    
     
 
     public void saveToFile() {
