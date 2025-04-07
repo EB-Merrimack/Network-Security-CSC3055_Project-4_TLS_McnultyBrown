@@ -20,6 +20,9 @@ import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.JsonIO;
 import java.net.Socket;
 import java.util.Scanner;
+
+import common.protocol.messages.StatusMessage;
+
 import java.io.PrintWriter;
 import java.io.InvalidObjectException;
 import java.util.HashMap;
@@ -131,6 +134,11 @@ import java.io.IOException;
    {
     if (doTracing)
       System.out.println(msg);
+   }
+
+   public StatusMessage sendMessage(Class<StatusMessage> class1) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'sendMessage'");
    }
 
 
