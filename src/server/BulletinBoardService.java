@@ -10,11 +10,13 @@ import merrimackutil.util.Tuple;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InvalidObjectException;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
 
 /**
  * This class is the main class for the bulletin board server.
@@ -125,20 +127,22 @@ public class BulletinBoardService
     {
         processArgs(args);
 
-        ServerSocket serve = new ServerSocket(config.getPort());
-        System.out.println("Bulletin Board Server started on port " + config.getPort());
+        SSLServerSocketFactory sslFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        SSLServerSocket server = (SSLServerSocket) sslFactory.createServerSocket(config.getPort());        System.out.println("Bulletin Board Server started on port " + config.getPort());
 
         nonceCache = new NonceCache(32, 30);
         ExecutorService pool = Executors.newFixedThreadPool(10);
 
-       /*  while (true)
+       while (true)
         {
-            Socket sock = serve.accept();
-            pool.submit(new BulletinBoardConnectionHandler(
+            Socket sock = server.accept();
+            pool.submit(new ConnectionHandler(
                 sock,
-                config,
+                config.doDebug(),
+                "board", // service name expected in the ticket
+                config.getKeystorePass(), // shared secret
                 nonceCache
             ));
-        }*/
+        }
     }
 }
