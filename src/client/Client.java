@@ -22,6 +22,8 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.bouncycastle.util.Objects;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import java.security.Security;
 
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
@@ -151,7 +153,11 @@ public class Client {
 
 
     public static void main(String[] args) throws Exception {
+        // Register Bouncy Castle provider
+        Security.addProvider(new BouncyCastleProvider());
+
         processArgs(args);
+        
         // 1. Prompt for password
         System.out.print("Enter a password: ");
         String password = new String(System.console().readPassword()); // Hides input
