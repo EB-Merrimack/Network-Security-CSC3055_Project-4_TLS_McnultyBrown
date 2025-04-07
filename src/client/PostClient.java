@@ -28,7 +28,7 @@ public class PostClient {
     
         public void sendMessage(String recipient, String messageText) throws Exception {
             // 1. Initialize StatusMessage for recipient's public key request
-            StatusMessage statusMessage = new StatusMessage("Requesting public key for " + recipient);
+            StatusMessage statusMessage = new StatusMessage(true, "Requesting public key for " + recipient);
             channel.sendMessage((Message) statusMessage);  // Send the StatusMessage object
     
             // 2. Request recipient's public key
@@ -36,13 +36,13 @@ public class PostClient {
             channel.sendMessage((Message) req);
     
             StatusMessage pubKeyResp = channel.sendMessage(StatusMessage.class);
-            if (pubKeyResp == null || !pubKeyResp.payload.equals("Success")) {
+            if (pubKeyResp == null || !pubKeyResp.getPayload().equals("Success")) {
                 System.out.println("Recipient not found.");
                 return;
             }
     
             // 3. Decode public key
-            byte[] pubKeyBytes = Base64.getDecoder().decode(pubKeyResp.payload);
+            byte[] pubKeyBytes = Base64.getDecoder().decode(pubKeyResp.getPayload());
             PublicKey pubKey = KeyFactory.getInstance("RSA")
                     .generatePublic(new X509EncodedKeySpec(pubKeyBytes));
     
@@ -78,7 +78,7 @@ public class PostClient {
             // 7. Final response
             StatusMessage postResp = channel.sendMessage(StatusMessage.class);
             if (postResp != null) {
-                System.out.println("Post Response: " + postResp.payload);
+                System.out.println("Post Response: " + postResp.getPayload());
             } else {
                 System.err.println("Failed to post the message.");
             }
