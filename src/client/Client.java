@@ -2,10 +2,13 @@ package client;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.InvalidObjectException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.X509EncodedKeySpec;
@@ -15,16 +18,26 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.bouncycastle.util.Objects;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import java.security.Security;
 
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
+import common.protocol.messages.CreateMessage;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
+import merrimackutil.codec.Base32;
+import merrimackutil.json.JsonIO;
+import merrimackutil.json.parser.JSONParser;
+import merrimackutil.json.types.JSONObject;
+import merrimackutil.json.types.JSONType;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
 
@@ -140,10 +153,59 @@ public class Client {
 
 
     public static void main(String[] args) throws Exception {
+        // Register Bouncy Castle provider
+        Security.addProvider(new BouncyCastleProvider());
+
         processArgs(args);
-    }
+        
+        // 1. Prompt for password
+        System.out.print("Enter a password: ");
+        String password = new String(System.console().readPassword()); // Hides input
 
- 
+        // 2. Generate ElGamal keypair
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal", "BC");
+        keyGen.initialize(2048);
+        KeyPair kp = keyGen.generateKeyPair();
 
-    
+        String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
+        String privKeyEncoded = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
+
+        // 3. Open TLS connection
+        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        try (SSLSocket socket = (SSLSocket) factory.createSocket(host, port)) {
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+            // 4. Send Create message
+            CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
+            JsonIO.writeSerializedObject(msg, out);
+
+            // 5. Wait for status response
+            String response = in.readLine();
+            JSONParser parser = new JSONParser(response);
+            // Grab the evaluated JSONType and cast it
+            JSONType result = (JSONType) parser.parse().evaluate();
+
+            if (!(result instanceof JSONObject)) {
+                throw new InvalidObjectException("Expected JSONObject but got: " + result.getClass().getName());
+            }
+
+            JSONObject json = (JSONObject) result;
+
+            // Deserialize into your StatusMessage object
+            StatusMessage status = new StatusMessage();
+            status.deserialize(json);
+
+            if (status.getStatus()) {
+                System.out.println("Account created successfully.");
+                System.out.println("Your private key (SAVE THIS SAFELY!):\n" + privKeyEncoded);
+
+                // Convert TOTP key from payload to base32
+                String totpKey = Base32.encodeToString(Base64.getDecoder().decode(status.getPayload().getBytes()), false);
+                System.out.println("TOTP Secret (Base32 for FreeOTP/Google Auth):\n" + totpKey);
+            } else {
+                System.out.println("Failed to create account: " + status.getPayload());
+            }
+        }
+    }       
 }

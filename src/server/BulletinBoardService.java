@@ -1,29 +1,46 @@
 package server;
 
+import merrimackutil.util.NonceCache;
+import merrimackutil.json.JsonIO;
+import merrimackutil.json.types.JSONObject;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.util.Tuple;
-import merrimackutil.json.JsonIO;
-import merrimackutil.json.types.JSONObject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InvalidObjectException;
+import java.net.Socket;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class BulletinBoardService {
-    private static String configFile = "config.json"; // default
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+
+/**
+ * This class is the main class for the bulletin board server.
+ */
+public class BulletinBoardService
+{
+    private static Configuration config = null;
     private static boolean doHelp = false;
     private static boolean doConfig = false;
+    private static String configName = null;
+    private static NonceCache nonceCache = null;
 
     /**
      * Prints the help menu.
      */
-    public static void usage() {
+    public static void usage()
+    {
         System.out.println("usage:");
         System.out.println("  boardd");
         System.out.println("  boardd --config <configfile>");
         System.out.println("  boardd --help");
         System.out.println("options:");
-        System.out.println("  -c, --config  Set the config file.");
-        System.out.println("  -h, --help    Display the help.");
+        System.out.println("  -c, --config\t\tSet the config file.");
+        System.out.println("  -h, --help\t\tDisplay the help.");
         System.exit(1);
     }
 
@@ -31,15 +48,26 @@ public class BulletinBoardService {
      * Loads the configuration information from the configuration file.
      * @param configName the name of the configuration file.
      */
-    public static void loadConfig(String configName) {
-        try {
-            JSONObject configObj = JsonIO.readObject(new File(configName));
-            System.out.println("Configuration loaded from: " + configName);
-        } catch (FileNotFoundException ex) {
-            System.out.println("Configuration file not found.");
+    public static void loadConfig(String configName)
+    {
+        JSONObject configObj = null;
+        try
+        {
+            configObj = JsonIO.readObject(new File(configName));
+        }
+        catch (FileNotFoundException ex)
+        {
+            System.out.println("Configuration file not found."+configName);
             System.exit(1);
-        } catch (Exception ex) {
-            System.out.println("Error loading configuration file: " + ex.getMessage());
+        }
+
+        try
+        {
+            config = new Configuration(configObj);
+        }
+        catch (InvalidObjectException ex)
+        {
+            System.out.println("Invalid configuration file.");
             System.exit(1);
         }
     }
@@ -48,11 +76,13 @@ public class BulletinBoardService {
      * Process the command line arguments.
      * @param args the array of command line arguments.
      */
-    public static void processArgs(String[] args) {
+    public static void processArgs(String[] args)
+    {
         OptionParser parser;
+
         LongOption[] opts = new LongOption[2];
-        opts[0] = new LongOption("config", true, 'c');
-        opts[1] = new LongOption("help", false, 'h');
+        opts[0] = new LongOption("help", false, 'h');
+        opts[1] = new LongOption("config", true, 'c');
 
         parser = new OptionParser(args);
         parser.setLongOpts(opts);
@@ -60,16 +90,18 @@ public class BulletinBoardService {
 
         Tuple<Character, String> currOpt;
 
-        while (parser.getOptIdx() != args.length) {
+        while (parser.getOptIdx() != args.length)
+        {
             currOpt = parser.getLongOpt(false);
 
-            switch (currOpt.getFirst()) {
+            switch (currOpt.getFirst())
+            {
                 case 'h':
                     doHelp = true;
                     break;
                 case 'c':
                     doConfig = true;
-                    configFile = currOpt.getSecond();
+                    configName = currOpt.getSecond();
                     break;
                 case '?':
                     usage();
@@ -81,10 +113,36 @@ public class BulletinBoardService {
             usage();
 
         if (doConfig)
-            loadConfig(configFile);
+            loadConfig(configName);
         else if (doHelp)
             usage();
         else
-            loadConfig("config.json");
+        loadConfig("./src/server/config.json");
+    }
+
+    /**
+     * Main entry point of the bulletin board service.
+     */
+    public static void main(String[] args) throws IOException
+    {
+        processArgs(args);
+
+        SSLServerSocketFactory sslFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        SSLServerSocket server = (SSLServerSocket) sslFactory.createServerSocket(config.getPort());        System.out.println("Bulletin Board Server started on port " + config.getPort());
+
+        nonceCache = new NonceCache(32, 30);
+        ExecutorService pool = Executors.newFixedThreadPool(10);
+
+       while (true)
+        {
+            Socket sock = server.accept();
+            pool.submit(new ConnectionHandler(
+                sock,
+                config.doDebug(),
+                "board", // service name expected in the ticket
+                config.getKeystorePass(), // shared secret
+                nonceCache
+            ));
+        }
     }
 }

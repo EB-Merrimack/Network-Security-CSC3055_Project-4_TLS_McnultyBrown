@@ -1,17 +1,38 @@
 package common.protocol.messages;
 
-public class StatusMessage {
-    // Change payload to String for easier handling of textual data
-    public String payload;
+import merrimackutil.json.*;
+import merrimackutil.json.types.*;
 
-    // Constructor for easy instantiation
-    public StatusMessage(String payload) {
+import java.io.InvalidObjectException;
+
+public class StatusMessage implements JSONSerializable {
+    private boolean status;
+    private String payload;
+
+    public StatusMessage() {}
+    public StatusMessage(boolean status, String payload) {
+        this.status = status;
         this.payload = payload;
     }
 
-    // Optional: Override toString() for easier debugging/logging
+    public boolean getStatus() { return status; }
+    public String getPayload() { return payload; }
+
     @Override
-    public String toString() {
-        return "StatusMessage{payload='" + payload + "'}";
+    public void deserialize(JSONType obj) throws InvalidObjectException {
+        if (!(obj instanceof JSONObject)) throw new InvalidObjectException("Expected JSONObject");
+        JSONObject json = (JSONObject) obj;
+
+        this.status = json.getBoolean("status");
+        this.payload = json.getString("payload");
+    }
+
+    @Override
+    public JSONType toJSONType() {
+        JSONObject obj = new JSONObject();
+        obj.put("type", "Status");
+        obj.put("status", status);
+        obj.put("payload", payload);
+        return obj;
     }
 }
