@@ -3,6 +3,9 @@ package server;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.JSONSerializable;
+
+import java.io.File;
+import java.io.IOException;
 import java.io.InvalidObjectException;
 
 /**
@@ -16,6 +19,9 @@ public class Configuration implements JSONSerializable
   private String boardFile;
   private String keystoreFile;
   private String keystorePass;
+  private String configDir;
+
+  
 
   /**
    * Constructs a configuration object from the appropriate JSON Object.
@@ -67,10 +73,13 @@ public class Configuration implements JSONSerializable
    * Get the keystore filename.
    * @return the keystore file path.
    */
-  public String getKeystoreFile()
-  {
-    return keystoreFile;
-  }
+  public String getKeystoreFile() {
+    try {
+        return new File(configDir, keystoreFile).getCanonicalPath(); // ✅ this resolves ".." and symlinks
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to resolve keystore path", e);
+    }
+}
 
   /**
    * Get the keystore password.
@@ -79,6 +88,11 @@ public class Configuration implements JSONSerializable
   public String getKeystorePass()
   {
     return keystorePass;
+  }
+
+  public void setConfigDir(String path) 
+  {
+    this.configDir = path;
   }
 
   /**

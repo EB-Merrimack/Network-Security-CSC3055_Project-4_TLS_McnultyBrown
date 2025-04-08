@@ -11,12 +11,13 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import common.protocol.Message;
 import common.protocol.post.Post;
 
 /**
  * Represents a single encrypted post message.
  */
-public class PostMessage extends Post implements JSONSerializable {
+public class PostMessage extends Post implements Message {
     private String recipient;
     private String ciphertext;
     private String encryptedKey;
@@ -82,21 +83,40 @@ public class PostMessage extends Post implements JSONSerializable {
         return jsonObject;
     }
 
- public String getDecryptedPayload(byte[] sessionKey) {
-    try {
-        byte[] ivBytes = Base64.getDecoder().decode(getIv());
-        byte[] cipherBytes = Base64.getDecoder().decode(getCiphertext());
+    public String getDecryptedPayload(byte[] sessionKey) {
+        try {
+            byte[] ivBytes = Base64.getDecoder().decode(getIv());
+            byte[] cipherBytes = Base64.getDecoder().decode(getCiphertext());
 
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
-        SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
+            SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
 
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
-        byte[] plainBytes = cipher.doFinal(cipherBytes);
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+            byte[] plainBytes = cipher.doFinal(cipherBytes);
 
-        return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
-    } catch (Exception e) {
-        throw new RuntimeException("Failed to decrypt payload", e);
+            return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt payload", e);
+        }
     }
-}
+
+    @Override
+    public String getType() {
+        return "Post";
+    }
+
+    @Override
+    public Message decode(JSONObject obj) throws InvalidObjectException {
+        PostMessage msg = new PostMessage(
+            obj.getString("user"),
+            obj.getString("message"),
+            obj.getString("wrappedKey"),
+            obj.getString("iv"),
+            obj.getString("recipient"),
+            obj.getString("ciphertext"),
+            obj.getString("encryptedKey")
+        );
+        return msg;
+    }
 }

@@ -1,11 +1,12 @@
 package common.protocol.messages;
 
-import merrimackutil.json.*;
 import merrimackutil.json.types.*;
 
 import java.io.InvalidObjectException;
 
-public class StatusMessage implements JSONSerializable {
+import common.protocol.Message;
+
+public class StatusMessage implements Message {
     private boolean status;
     private String payload;
 
@@ -34,5 +35,16 @@ public class StatusMessage implements JSONSerializable {
         obj.put("status", status);
         obj.put("payload", payload);
         return obj;
+    }
+    @Override
+    public String getType() {
+        return "Status";
+    }
+
+    @Override
+    public Message decode(JSONObject obj) throws InvalidObjectException {
+        StatusMessage msg = new StatusMessage();
+        msg.deserialize(obj);
+        return msg;
     }
 }
