@@ -47,9 +47,11 @@ public class AccountCreation {
         }
     }
 
-    // Method to create a new user account
-    public static StatusMessage createAccount(String username, String password, String publicKey) {
+    public static StatusMessage createAccount(String username, String password, String publicKey, String userfile) {
         try {
+            // Load the user database from the file before doing anything else
+            UserDatabase.load(userfile);
+    
             // Check if user already exists
             if (UserDatabase.containsKey(username)) {
                 return new StatusMessage(false, "User already exists.");
@@ -81,8 +83,9 @@ public class AccountCreation {
                 publicKey
             );
     
-            // Save user to database (writes to users.json)
+            // Save user to database and write back to file
             UserDatabase.put(username, user);
+            UserDatabase.save(userfile);
     
             // Respond with base64 TOTP key
             return new StatusMessage(true, totpKey);
@@ -92,7 +95,7 @@ public class AccountCreation {
             return new StatusMessage(false, "Unexpected error.");
         }
     }
-
+    
    
 
     

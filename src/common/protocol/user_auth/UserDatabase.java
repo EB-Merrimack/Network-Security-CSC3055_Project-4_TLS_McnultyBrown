@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserDatabase {
-    private static final String USERS_FILE = "common/protocol/user_auth/users.json";
     private static Map<String, User> userMap = new HashMap<>();
 
     // Wrapper class to serialize root-level "entries" array
@@ -35,7 +34,7 @@ public class UserDatabase {
     }
 
     static {
-        loadUsers();
+        loadUsers("common/protocol/user_auth/users.json");
     }
 
     public static boolean containsKey(String username) {
@@ -44,12 +43,12 @@ public class UserDatabase {
 
     public static void put(String username, User newUser) {
         userMap.put(username, newUser);
-        saveUsers();
+        saveUsers("common/protocol/user_auth/users.json");
     }
 
-    private static void loadUsers() {
+    private static void loadUsers(String userfile) {
         try {
-            File file = new File(USERS_FILE);
+            File file = new File(userfile);
             if (!file.exists()) {
                 System.out.println("[UserDatabase] users.json not found. Starting fresh.");
                 return;
@@ -64,7 +63,8 @@ public class UserDatabase {
             JSONArray entries = root.getArray("entries");
 
             for (int i = 0; i < entries.size(); i++) {
-                JSONType entryType = (JSONType) entries.get(i);                if (!(entryType instanceof JSONObject)) continue;
+                JSONType entryType = (JSONType) entries.get(i);
+                if (!(entryType instanceof JSONObject)) continue;
 
                 User user = new User();
                 user.deserialize(entryType); // ✅ this works because entryType is a JSONType
@@ -77,7 +77,7 @@ public class UserDatabase {
         }
     }
 
-    private static void saveUsers() {
+    private static void saveUsers(String userfile) {
         try {
             JSONArray entries = new JSONArray();
             for (User user : userMap.values()) {
@@ -85,10 +85,20 @@ public class UserDatabase {
             }
 
             UserDBWrapper db = new UserDBWrapper(entries);
-            JsonIO.writeSerializedObject(db, new File(USERS_FILE));
+            JsonIO.writeFormattedObject(db, new File(userfile));
             System.out.println("[UserDatabase] Saved users to file.");
         } catch (IOException e) {
             System.err.println("[UserDatabase] Failed to save users: " + e.getMessage());
         }
     }
+
+    // Method to load users from a custom userfile
+    public static void load(String userfile) {
+        loadUsers(userfile); // Delegate to the existing loadUsers method
+    }
+
+    public static void save(String userfile) {
+        saveUsers(userfile); // Delegate to the existing saveUsers method
+    }
+    
 }

@@ -15,7 +15,7 @@ public class Configuration implements JSONSerializable
 {
   private int port;
   private boolean doDebug;
-  private String usersFile;
+  private static String usersFile;
   private String boardFile;
   private String keystoreFile;
   private String keystorePass;
@@ -55,7 +55,7 @@ public class Configuration implements JSONSerializable
    * Get the path to the users database file.
    * @return the file path as a string.
    */
-  public String getUsersFile()
+  public static String getUsersFile()
   {
     return usersFile;
   }

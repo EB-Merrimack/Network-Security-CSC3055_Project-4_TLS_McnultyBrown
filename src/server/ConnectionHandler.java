@@ -101,12 +101,13 @@ public class ConnectionHandler implements Runnable {
             String username = createMsg.getUsername();
             String password = createMsg.getPassword();
             String publicKey = createMsg.getPublicKey();
+            String userfile = Configuration.getUsersFile();
     
             System.out.println("[SERVER] Creating account for: " + username);
     
             // Call account creation logic
             common.protocol.messages.StatusMessage response =
-                common.protocol.user_creation.AccountCreation.createAccount(username, password, publicKey);
+                common.protocol.user_creation.AccountCreation.createAccount(username, password, publicKey, userfile);
     
             // Send the response back to the client
             channel.sendMessage(response);
