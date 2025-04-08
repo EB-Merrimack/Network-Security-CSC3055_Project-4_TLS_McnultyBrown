@@ -1,15 +1,15 @@
 
-package server.model;
+/*package server.model;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.JSONSerializable;
-import java.io.InvalidObjectException;
+import java.io.InvalidObjectException; */
 
 /**
  * This class represents the configuration data for the service.
  */
-public class Configuration implements JSONSerializable {
+/*public class Configuration implements JSONSerializable {
     private int port;
     private boolean doDebug;
     private String usersFile;
@@ -22,7 +22,7 @@ public class Configuration implements JSONSerializable {
      * @param config the JSON formatted configuration object.
      * @throws InvalidObjectException if the config object is not valid.
      */
-    public Configuration(JSONObject config) throws InvalidObjectException {
+    /*public Configuration(JSONObject config) throws InvalidObjectException {
         deserialize(config);
     }
 
@@ -55,7 +55,7 @@ public class Configuration implements JSONSerializable {
      * @param obj a JSON type to deserialize.
      * @throws InvalidObjectException the type does not match this object.
      */
-    public void deserialize(JSONType obj) throws InvalidObjectException {
+    /*public void deserialize(JSONType obj) throws InvalidObjectException {
         JSONObject config;
         String[] keys = {"users-file", "port", "keystore-file", "keystore-pass", "board-file", "debug"};
         if (obj.isObject()) {
@@ -77,7 +77,7 @@ public class Configuration implements JSONSerializable {
      * Converts the object to a JSON type.
      * @return a JSON type either JSONObject or JSONArray.
      */
-    public JSONType toJSONType() {
+    /*public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
         obj.put("users-file", usersFile);
         obj.put("port", port);
@@ -88,3 +88,4 @@ public class Configuration implements JSONSerializable {
         return obj;
     }
 }
+*/

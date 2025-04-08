@@ -49,91 +49,51 @@ public class AccountCreation {
 
     // Method to create a new user account
     public static StatusMessage createAccount(String username, String password, String publicKey) {
-        // Check if the username already exists in the database
-        if (UserDatabase.containsKey(username)) {
-            return new StatusMessage(false, "User already exists.");
-        }
-
-        // Hash the password securely using PBKDF2
-        String passwordHash = hashPassword(password);
-        
-        // Generate a real TOTP key using Bouncy Castle
-        String totpKey = generateTOTPKey();
-        
-        // Generate the RSA key pair (private/public)
-        String privateKey = generatePrivateKey();
-        
-        // Create the user object
-        User newUser = new User(username, passwordHash, publicKey, totpKey, privateKey);
-        
-        // Store the user in the "database"
-        UserDatabase.put(username, newUser);
-
-        // Return the status message with the base64 encoded TOTP key (payload)
-        return new StatusMessage(true, totpKey);
-    }
-
-    // Hash the password using PBKDF2
-    private static String hashPassword(String password) {
         try {
-            // PBKDF2 hashing
-            char[] chars = password.toCharArray();
-            byte[] salt = new byte[16];
-            new SecureRandom().nextBytes(salt);
-            KeySpec spec = new PBEKeySpec(chars, salt, 10000, 256);
-            SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            byte[] hash = f.generateSecret(spec).getEncoded();
-            return Base64.getEncoder().encodeToString(hash);  // Base64 encoded password hash
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // Generate a real TOTP key using Bouncy Castle
-    private static String generateTOTPKey() {
-        try {
-            // Generate a random 128-bit key (16 bytes)
+            // Check if user already exists
+            if (UserDatabase.containsKey(username)) {
+                return new StatusMessage(false, "User already exists.");
+            }
+    
+            // Generate salt
+            byte[] saltBytes = new byte[16];
             SecureRandom random = new SecureRandom();
-            byte[] key = new byte[16];
-            random.nextBytes(key);
-
-            // HMAC SHA1 for generating TOTP
-            HMac hmac = new HMac(new SHA1Digest());
-            hmac.init(new KeyParameter(key));
-
-            // Example data (can be modified to include the time-based component)
-            byte[] data = new byte[8]; // The data for TOTP can be the current timestamp, etc.
-            hmac.update(data, 0, data.length);
-
-            // Generate the TOTP value
-            byte[] result = new byte[hmac.getMacSize()];
-            hmac.doFinal(result, 0);
-
-            // Convert the TOTP result to Base32 (without padding)
-            return Base32.encodeToString(result, false).replace("=", "");
+            random.nextBytes(saltBytes);
+            String salt = Base64.getEncoder().encodeToString(saltBytes);
+    
+            // Hash password with PBKDF2 and salt
+            KeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, 10000, 256);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            byte[] hash = factory.generateSecret(spec).getEncoded();
+            String passwordHash = Base64.getEncoder().encodeToString(hash);
+    
+            // Generate TOTP key
+            byte[] totpBytes = new byte[20]; // 160-bit secret
+            random.nextBytes(totpBytes);
+            String totpKey = Base64.getEncoder().encodeToString(totpBytes);
+    
+            // Create User object
+            common.protocol.user_auth.User user = new common.protocol.user_auth.User(
+                salt,
+                passwordHash,
+                totpKey,
+                username,
+                publicKey
+            );
+    
+            // Save user to database (writes to users.json)
+            UserDatabase.put(username, user);
+    
+            // Respond with base64 TOTP key
+            return new StatusMessage(true, totpKey);
+    
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return new StatusMessage(false, "Unexpected error.");
         }
     }
 
-    // Generate RSA private/public key pair
-    private static String generatePrivateKey() {
-        try {
-            // Generate RSA Key Pair
-            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-            keyPairGen.initialize(2048);
-            KeyPair keyPair = keyPairGen.generateKeyPair();
-            
-            // Extract the private key
-            PrivateKey privateKey = keyPair.getPrivate();
-            
-            // Encode the private key to base64
-            return Base64.getEncoder().encodeToString(privateKey.getEncoded());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+   
+
+    
 }

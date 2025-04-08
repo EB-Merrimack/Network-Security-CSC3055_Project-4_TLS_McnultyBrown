@@ -38,6 +38,8 @@ public class ConnectionHandler implements Runnable {
     {
         this.channel = new ProtocolChannel(sock);
         this.channel.addMessageType(new common.protocol.user_creation.CreateMessage());
+        this.channel.addMessageType(new common.protocol.messages.StatusMessage());
+
         this.nonceCache = nonceCache;
         this.serviceName = serviceName;
         this.secret = secret;

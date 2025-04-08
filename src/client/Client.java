@@ -155,9 +155,12 @@ public class Client {
     public static void main(String[] args) throws Exception {
         // Register Bouncy Castle provider
         Security.addProvider(new BouncyCastleProvider());
-
-        processArgs(args);
         
+        System.setProperty("javax.net.ssl.trustStore", "truststore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "test12345");
+        
+        processArgs(args);
+
         if (create) {
             System.out.print("Enter a password: ");
             String password = new String(System.console().readPassword());

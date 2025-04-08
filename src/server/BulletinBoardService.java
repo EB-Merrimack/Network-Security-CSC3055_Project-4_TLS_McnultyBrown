@@ -10,7 +10,6 @@ import merrimackutil.util.Tuple;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InvalidObjectException;
-import java.net.Socket;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,6 +28,7 @@ public class BulletinBoardService
     private static boolean doConfig = false;
     private static String configName = null;
     private static NonceCache nonceCache = null;
+    
 
     /**
      * Prints the help menu.
@@ -65,6 +65,8 @@ public class BulletinBoardService
         try
         {
             config = new Configuration(configObj);
+            File configFile = new File(configName);
+            config.setConfigDir(configFile.getParent());
         }
         catch (InvalidObjectException ex)
         {
@@ -121,12 +123,19 @@ public class BulletinBoardService
         loadConfig("../src/server/config.json");
     }
 
+    
     /**
      * Main entry point of the bulletin board service.
      */
     public static void main(String[] args) throws IOException
     {
         processArgs(args);
+
+        System.setProperty("javax.net.ssl.keyStore", config.getKeystoreFile());
+        System.setProperty("javax.net.ssl.keyStorePassword", config.getKeystorePass());
+
+        System.out.println("[DEBUG] Keystore file: " + config.getKeystoreFile());
+        System.out.println("[DEBUG] File exists? " + new File(config.getKeystoreFile()).exists());
 
         SSLServerSocketFactory sslFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket server = (SSLServerSocket) sslFactory.createServerSocket(config.getPort());        System.out.println("Bulletin Board Server started on port " + config.getPort());
