@@ -10,8 +10,6 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import common.protocol.post.Post;
-
 /**
  * Represents a single encrypted post message.
  */

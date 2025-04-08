@@ -1,4 +1,4 @@
-package common.protocol.post;
+package common.protocol.messages;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;

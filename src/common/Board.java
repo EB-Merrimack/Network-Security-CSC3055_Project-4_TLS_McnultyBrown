@@ -8,7 +8,8 @@ import merrimackutil.json.JSONSerializable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import common.protocol.post.Post;
+
+import common.protocol.messages.Post;
 
 /**
  * This class represents a board of encrypted posts.
