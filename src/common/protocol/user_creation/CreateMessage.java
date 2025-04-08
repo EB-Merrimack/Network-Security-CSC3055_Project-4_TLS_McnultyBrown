@@ -11,11 +11,27 @@ public class CreateMessage implements Message, JSONSerializable {
     private String pass;
     private String pubkey;
 
+    public CreateMessage() {
+        
+    }
+
     public CreateMessage(String user, String pass, String pubkey) {
         this.user = user;
         this.pass = pass;
         this.pubkey = pubkey;
         System.out.println("[DEBUG] CreateMessage constructor called with user=" + user + ", pass=" + pass + ", pubkey=" + pubkey);
+    }
+
+    public String getUsername() {
+        return user;
+    }
+    
+    public String getPassword() {
+        return pass;
+    }
+    
+    public String getPublicKey() {
+        return pubkey;
     }
 
     @Override

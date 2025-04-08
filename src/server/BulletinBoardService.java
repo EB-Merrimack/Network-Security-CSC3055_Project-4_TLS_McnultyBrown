@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
 
 /**
  * This class is the main class for the bulletin board server.
@@ -135,7 +136,7 @@ public class BulletinBoardService
 
        while (true)
         {
-            Socket sock = server.accept();
+            SSLSocket sock = (SSLSocket) server.accept();
             pool.submit(new ConnectionHandler(
                 sock,
                 config.doDebug(),

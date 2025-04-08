@@ -11,6 +11,7 @@ import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostBuilder;
 import common.protocol.messages.PostMessage;
+import common.protocol.user_creation.CreateMessage;
 import merrimackutil.util.NonceCache;
 
 public class ConnectionHandler implements Runnable {
@@ -36,6 +37,7 @@ public class ConnectionHandler implements Runnable {
     public ConnectionHandler(Socket sock, boolean doDebug, String serviceName, String secret, NonceCache nonceCache) throws IllegalArgumentException, IOException
     {
         this.channel = new ProtocolChannel(sock);
+        this.channel.addMessageType(new common.protocol.user_creation.CreateMessage());
         this.nonceCache = nonceCache;
         this.serviceName = serviceName;
         this.secret = secret;
@@ -55,25 +57,61 @@ public class ConnectionHandler implements Runnable {
        * Run the communication between the service and the client after the handshake.
        */
       private void runCommunication() {
+        try {
+            System.out.println("[DEBUG] Waiting to receive a message...");
+            Message msg = channel.receiveMessage();
+            System.out.println("[DEBUG] Received message: " + msg);
 
-          PostMessage msg = null;
-          String payload = null;
+    
+            if (msg.getType().equals("Create")) {
+                // Handle CreateMessage (unencrypted)
+                handleCreateMessage(msg);
+                return;
+            } else if (msg instanceof PostMessage) {
+                // Handle PostMessage (encrypted)
+                PostMessage postMsg = (PostMessage) msg;
+                String payload = postMsg.getDecryptedPayload(sessionKey);
+    
+                if (payload == null) {
+                    System.out.println("[SERVER] Decrypted payload is null.");
+                    return;
+                }
+    
+                System.out.println("[SERVER] Received post payload: " + payload);
+                channel.sendMessage(PostBuilder.buildMessage(payload));
+            } else {
+                System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
+            }
+    
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
-          try {
-              msg = (PostMessage) channel.receiveMessage();
-
-           
-
-        
-              payload = msg.getDecryptedPayload(sessionKey);
-
-              if (payload == null)
-                  return;
-          } catch (InvalidObjectException ex) {
-              System.out.println(ex);
-              return;
-          }
-          channel.sendMessage((Message) PostBuilder.buildMessage(payload));
-      }
+    private void handleCreateMessage(Message msg) {
+        try {
+            System.out.println("[SERVER] Handling CreateMessage");
+    
+            // Safe cast
+            common.protocol.user_creation.CreateMessage createMsg = 
+                (common.protocol.user_creation.CreateMessage) msg;
+    
+            String username = createMsg.getUsername();
+            String password = createMsg.getPassword();
+            String publicKey = createMsg.getPublicKey();
+    
+            System.out.println("[SERVER] Creating account for: " + username);
+    
+            // Call account creation logic
+            common.protocol.messages.StatusMessage response =
+                common.protocol.user_creation.AccountCreation.createAccount(username, password, publicKey);
+    
+            // Send the response back to the client
+            channel.sendMessage(response);
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
 }

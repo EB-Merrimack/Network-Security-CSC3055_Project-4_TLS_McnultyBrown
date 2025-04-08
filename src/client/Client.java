@@ -174,7 +174,13 @@ public class Client {
         
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
+            
+            socket.startHandshake(); // 👈 force the TLS handshake now
+            System.out.println("[CLIENT] TLS handshake completed.");
+
+
             channel = new ProtocolChannel(socket);
+            channel.addMessageType(new StatusMessage());
         
             CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
             System.out.println("Sending create message: " + msg);//more debug for message

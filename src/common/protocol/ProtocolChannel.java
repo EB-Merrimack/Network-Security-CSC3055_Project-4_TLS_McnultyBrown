@@ -85,6 +85,8 @@ import java.io.IOException;
    {
     trace("Local -> Remote: " + msg);
     JsonIO.writeSerializedObject(msg, out);
+    out.println();
+    out.flush();
    }
 
    /**
