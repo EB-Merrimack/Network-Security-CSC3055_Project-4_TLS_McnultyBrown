@@ -2,10 +2,11 @@ package common.protocol.messages;
 
 import merrimackutil.json.*;
 import merrimackutil.json.types.*;
+import common.protocol.Message;
 
 import java.io.InvalidObjectException;
 
-public class CreateMessage implements JSONSerializable {
+public class CreateMessage implements Message, JSONSerializable {
     private String user;
     private String pass;
     private String pubkey;
@@ -35,4 +36,19 @@ public class CreateMessage implements JSONSerializable {
         obj.put("pubkey", pubkey);
         return obj;
     }
+
+    @Override
+    public String getType() {
+        return "Create";
+    }
+    
+
+    @Override
+    public Message decode(JSONObject obj) throws InvalidObjectException {
+        String user = obj.getString("user");
+        String pass = obj.getString("pass");
+        String pubkey = obj.getString("pubkey");
+        return new CreateMessage(user, pass, pubkey);
+    }
+    
 }

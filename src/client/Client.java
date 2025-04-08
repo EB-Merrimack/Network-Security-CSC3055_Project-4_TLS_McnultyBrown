@@ -158,54 +158,48 @@ public class Client {
 
         processArgs(args);
         
-        // 1. Prompt for password
-        System.out.print("Enter a password: ");
-        String password = new String(System.console().readPassword()); // Hides input
-
-        // 2. Generate ElGamal keypair
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal", "BC");
-        keyGen.initialize(2048);
-        KeyPair kp = keyGen.generateKeyPair();
-
-        String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
-        String privKeyEncoded = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
-
-        // 3. Open TLS connection
-        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        try (SSLSocket socket = (SSLSocket) factory.createSocket(host, port)) {
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // 4. Send Create message
+        if (create) {
+            System.out.print("Enter a password: ");
+            String password = new String(System.console().readPassword());
+        
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal", "BC");
+            keyGen.initialize(2048);
+            KeyPair kp = keyGen.generateKeyPair();
+        
+            String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
+            String privKeyEncoded = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
+        
+            System.out.println("Public key: " + pubKeyEncoded);
+            System.out.println("Private key: " + privKeyEncoded); // Prompt user to save
+        
+            Socket socket = new Socket(host, port);
+            channel = new ProtocolChannel(socket);
+        
             CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
-            JsonIO.writeSerializedObject(msg, out);
-
-            // 5. Wait for status response
-            String response = in.readLine();
-            JSONParser parser = new JSONParser(response);
-            // Grab the evaluated JSONType and cast it
-            JSONType result = (JSONType) parser.parse().evaluate();
-
-            if (!(result instanceof JSONObject)) {
-                throw new InvalidObjectException("Expected JSONObject but got: " + result.getClass().getName());
+            channel.sendMessage((Message) msg);
+        
+            Message response = channel.receiveMessage();
+        
+            if (!(response instanceof StatusMessage)) {
+                System.out.println("Unexpected response from server: " + response.getClass().getSimpleName());
+                channel.closeChannel();
+                return;
             }
-
-            JSONObject json = (JSONObject) result;
-
-            // Deserialize into your StatusMessage object
-            StatusMessage status = new StatusMessage();
-            status.deserialize(json);
-
+        
+            StatusMessage status = (StatusMessage) response;
             if (status.getStatus()) {
                 System.out.println("Account created successfully.");
                 System.out.println("Your private key (SAVE THIS SAFELY!):\n" + privKeyEncoded);
-
-                // Convert TOTP key from payload to base32
-                String totpKey = Base32.encodeToString(Base64.getDecoder().decode(status.getPayload().getBytes()), false);
-                System.out.println("TOTP Secret (Base32 for FreeOTP/Google Auth):\n" + totpKey);
+        
+                String totpKey = Base32.encodeToString(
+                    Base64.getDecoder().decode(status.getPayload().getBytes(StandardCharsets.UTF_8)), false
+                );
+                System.out.println("TOTP Secret (Base32 for FreeOTP/Google Authenticator):\n" + totpKey);
             } else {
                 System.out.println("Failed to create account: " + status.getPayload());
             }
+        
+            channel.closeChannel();
         }
-    }       
+    }
 }
