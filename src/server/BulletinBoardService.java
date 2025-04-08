@@ -117,7 +117,7 @@ public class BulletinBoardService
         else if (doHelp)
             usage();
         else
-        loadConfig("./src/server/config.json");
+        loadConfig("../src/server/config.json");
     }
 
     /**

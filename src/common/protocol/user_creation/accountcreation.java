@@ -4,8 +4,8 @@ import merrimackutil.codec.Base32;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.util.encoders.Base64;
 
+import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.UserDatabase;
 
 import javax.crypto.KeyGenerator;
@@ -22,6 +22,8 @@ import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Base64;
+
 
 public class AccountCreation {
 
@@ -46,10 +48,10 @@ public class AccountCreation {
     }
 
     // Method to create a new user account
-    public static String createAccount(String username, String password, String publicKey) {
+    public static StatusMessage createAccount(String username, String password, String publicKey) {
         // Check if the username already exists in the database
         if (UserDatabase.containsKey(username)) {
-            return generateResponse(false, "User already exists.");
+            return new StatusMessage(false, "User already exists.");
         }
 
         // Hash the password securely using PBKDF2
@@ -68,7 +70,7 @@ public class AccountCreation {
         UserDatabase.put(username, newUser);
 
         // Return the status message with the base64 encoded TOTP key (payload)
-        return generateResponse(true, totpKey);
+        return new StatusMessage(true, totpKey);
     }
 
     // Hash the password using PBKDF2
@@ -134,25 +136,4 @@ public class AccountCreation {
             return null;
         }
     }
-
-    // Method to generate the response message
-    private static String generateResponse(boolean status, String payload) {
-        // If status is true, the payload will be the base64 encoded TOTP key
-        if (status) {
-            // Encode the TOTP key in Base32 (without padding)
-            String base32TOTPKey = Base32.encodeToString(payload.getBytes(), status).replace("=", "");
-            return generateStatusMessage(status, base32TOTPKey);
-        }
-        
-        // If status is false, send an error message as the payload
-        return generateStatusMessage(status, payload);
-    }
-
-    // Helper method to generate a status response
-    private static String generateStatusMessage(boolean status, String payload) {
-        // Simulate the JSON response (In a real system, this would be structured as a JSON object)
-        return "{ \"status\": " + status + ", \"payload\": \"" + payload + "\" }";
-    }
-
-
 }
