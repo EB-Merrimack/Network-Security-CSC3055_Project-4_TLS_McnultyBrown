@@ -61,4 +61,9 @@ public class CreateMessage implements Message {
         System.out.println("[DEBUG] Decoding CreateMessage with user=" + user + ", pass=" + pass + ", pubkey=" + pubkey);
         return new CreateMessage(user, pass, pubkey);
     }
+
+    @Override
+    public String getUsername() {
+        return user;
+    }
 }

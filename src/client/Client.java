@@ -149,7 +149,7 @@ public class Client {
             channel = new ProtocolChannel(socket);
         
             CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
-            System.out.println("Sending create message: " + msg);//more debug for message
+            //send the user to the server
             channel.sendMessage((Message) msg);
     
             

@@ -41,4 +41,6 @@ import java.io.InvalidObjectException;
     * correct type.
     */
    public Message decode(JSONObject obj) throws InvalidObjectException;
+
+   public String getUsername();
  }
