@@ -67,6 +67,10 @@ public class BulletinBoardService
             config = new Configuration(configObj);
             File configFile = new File(configName);
             config.setConfigDir(configFile.getParent());
+
+            // Set users.json path for UserDatabase
+            common.protocol.user_auth.UserDatabase.setFilePath(config.getUsersFile());
+
         }
         catch (InvalidObjectException ex)
         {
@@ -120,7 +124,7 @@ public class BulletinBoardService
         else if (doHelp)
             usage();
         else
-        loadConfig("./src/server/config.json");
+        loadConfig("config.json");
     }
 
     

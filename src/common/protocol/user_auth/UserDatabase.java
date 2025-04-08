@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserDatabase {
-    private static final String USERS_FILE = "common/protocol/user_auth/users.json";
+    private static String usersFilePath = null;
     private static Map<String, User> userMap = new HashMap<>();
 
     // Wrapper class to serialize root-level "entries" array
@@ -33,6 +33,9 @@ public class UserDatabase {
             // unused
         }
     }
+    public static void setFilePath(String path) {
+        usersFilePath = path;
+    }
 
     static {
         loadUsers();
@@ -49,7 +52,7 @@ public class UserDatabase {
 
     private static void loadUsers() {
         try {
-            File file = new File(USERS_FILE);
+            File file = new File(usersFilePath);
             if (!file.exists()) {
                 System.out.println("[UserDatabase] users.json not found. Starting fresh.");
                 return;
@@ -85,7 +88,7 @@ public class UserDatabase {
             }
 
             UserDBWrapper db = new UserDBWrapper(entries);
-            JsonIO.writeSerializedObject(db, new File(USERS_FILE));
+            JsonIO.writeSerializedObject(db, new File(usersFilePath));
             System.out.println("[UserDatabase] Saved users to file.");
         } catch (IOException e) {
             System.err.println("[UserDatabase] Failed to save users: " + e.getMessage());

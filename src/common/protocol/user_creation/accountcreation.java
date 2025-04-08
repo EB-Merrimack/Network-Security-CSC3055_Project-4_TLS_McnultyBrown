@@ -83,6 +83,7 @@ public class AccountCreation {
     
             // Save user to database (writes to users.json)
             UserDatabase.put(username, user);
+            
     
             // Respond with base64 TOTP key
             return new StatusMessage(true, totpKey);
