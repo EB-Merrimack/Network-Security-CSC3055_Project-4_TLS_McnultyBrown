@@ -5,46 +5,21 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 
-
+import common.protocol.user_auth.User;
 import common.protocol.user_auth.UserDatabase;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.Mac;
-
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Base64;
 
 public class AccountCreation {
 
-    // Simulated database (in a real-world scenario, this could be a database connection)
-    private static Map<String, User> userDatabase = new HashMap<>();
-    
-    public static class User {
-        private String username;
-        private String passwordHash; // Store password securely using hash
-        private String publicKey;
-        private String totpKey; // Base32 encoded TOTP key
-        private String privateKey; // The private key generated for the user
-        
-        // Constructor
-        public User(String username, String passwordHash, String publicKey, String totpKey, String privateKey) {
-            this.username = username;
-            this.passwordHash = passwordHash;
-            this.publicKey = publicKey;
-            this.totpKey = totpKey;
-            this.privateKey = privateKey;
-        }
-    }
+  
 
     // Method to create a new user account
     public static String createAccount(String username, String password, String publicKey) {

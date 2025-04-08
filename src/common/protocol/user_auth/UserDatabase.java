@@ -1,17 +1,26 @@
 package common.protocol.user_auth;
 
-import common.protocol.user_creation.AccountCreation.User;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 public class UserDatabase {
 
+    // Thread-safe map to store users
+    private static final Map<String, User> users = new ConcurrentHashMap<>();
+
     public static boolean containsKey(String username) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'containsKey'");
+        return users.containsKey(username);
     }
 
     public static void put(String username, User newUser) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'put'");
+        users.put(username, newUser);
     }
 
+    public static User get(String username) {
+        return users.get(username);
+    }
+
+    public static void clear() {
+        users.clear();
+    }
 }
