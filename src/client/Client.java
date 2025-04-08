@@ -172,7 +172,8 @@ public class Client {
             System.out.println("Public key: " + pubKeyEncoded);
             System.out.println("Private key: " + privKeyEncoded); // Prompt user to save
         
-            Socket socket = new Socket(host, port);
+            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+            SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
             channel = new ProtocolChannel(socket);
         
             CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
@@ -204,9 +205,7 @@ public class Client {
                 System.out.println("Account created successfully.");
                 System.out.println("Your private key (SAVE THIS SAFELY!):\n" + privKeyEncoded);
         
-                String totpKey = Base32.encodeToString(
-                    Base64.getDecoder().decode(status.getPayload().getBytes(StandardCharsets.UTF_8)), false
-                );
+                String totpKey = status.getPayload();
                 System.out.println("TOTP Secret (Base32 for FreeOTP/Google Authenticator):\n" + totpKey);
             } else {
                 System.out.println("Failed to create account: " + status.getPayload());
