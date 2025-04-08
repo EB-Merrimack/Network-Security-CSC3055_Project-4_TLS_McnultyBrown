@@ -4,7 +4,7 @@ import merrimackutil.codec.Base32;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.util.encoders.Base64;
+
 
 import common.protocol.user_auth.UserDatabase;
 
@@ -22,6 +22,7 @@ import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Base64;
 
 public class AccountCreation {
 
