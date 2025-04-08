@@ -72,7 +72,7 @@ public class AccountCreation {
             // Generate TOTP key
             byte[] totpBytes = new byte[20]; // 160-bit secret
             random.nextBytes(totpBytes);
-            String totpKey = Base64.getEncoder().encodeToString(totpBytes);
+            String totpKey = Base32.encodeToString(totpBytes, true);
     
             // Create User object
             common.protocol.user_auth.User user = new common.protocol.user_auth.User(
