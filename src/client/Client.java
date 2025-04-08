@@ -176,15 +176,28 @@ public class Client {
             channel = new ProtocolChannel(socket);
         
             CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
+            System.out.println("Sending create message: " + msg);//more debug for message
             channel.sendMessage((Message) msg);
-        
+    
+            
+            // Receive the response
             Message response = channel.receiveMessage();
-        
+            System.out.println("Received response: " + response);
+            
+            // Additional debug info for response handling
+            if (response != null) {
+                System.out.println("Response class: " + response.getClass().getSimpleName());
+                System.out.println("Response content: " + response.toString());
+            } else {
+                System.out.println("No response received.");
+            }
+            
             if (!(response instanceof StatusMessage)) {
                 System.out.println("Unexpected response from server: " + response.getClass().getSimpleName());
                 channel.closeChannel();
                 return;
             }
+            
         
             StatusMessage status = (StatusMessage) response;
             if (status.getStatus()) {
