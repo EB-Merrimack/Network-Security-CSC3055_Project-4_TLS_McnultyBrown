@@ -57,7 +57,7 @@ public class BulletinBoardService
         }
         catch (FileNotFoundException ex)
         {
-            System.out.println("Configuration file not found.");
+            System.out.println("Configuration file not found."+configName);
             System.exit(1);
         }
 
@@ -117,7 +117,7 @@ public class BulletinBoardService
         else if (doHelp)
             usage();
         else
-        loadConfig("../src/server/config.json");
+        loadConfig("./src/server/config.json");
     }
 
     /**
