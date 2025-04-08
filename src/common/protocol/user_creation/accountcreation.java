@@ -6,7 +6,6 @@ import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Base64;
 
-import common.protocol.user_auth.UserData;
 import common.protocol.user_auth.UserDatabase;
 
 import javax.crypto.KeyGenerator;
@@ -21,6 +20,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AccountCreation {
 
@@ -64,7 +65,7 @@ public class AccountCreation {
         User newUser = new User(username, passwordHash, publicKey, totpKey, privateKey);
         
         // Store the user in the "database"
-        UserData.put(username, newUser);
+        UserDatabase.put(username, newUser);
 
         // Return the status message with the base64 encoded TOTP key (payload)
         return generateResponse(true, totpKey);
