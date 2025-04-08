@@ -27,10 +27,10 @@ import java.security.Security;
 
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
-import common.protocol.messages.CreateMessage;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
+import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.codec.Base32;

@@ -1,4 +1,4 @@
-package common.protocol.messages;
+package common.protocol.user_creation;
 
 import merrimackutil.json.*;
 import merrimackutil.json.types.*;
