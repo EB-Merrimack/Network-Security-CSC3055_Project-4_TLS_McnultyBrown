@@ -8,6 +8,9 @@ import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostBuilder;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.StatusMessage;
+import common.protocol.user_auth.User;
+import common.protocol.user_creation.UserMessage;
+import merrimackutil.json.types.JSONType;
 import merrimackutil.util.NonceCache;
 
 public class ConnectionHandler implements Runnable {
@@ -46,9 +49,10 @@ public class ConnectionHandler implements Runnable {
         String payload = null;
 
         try {
-            // Receive the message from the client
-            msg = channel.receiveMessage();
-            
+             //
+              JSONType rawMessage = (JSONType) channel.receiveMessage();  // Get the raw message as a string
+              // Deserialize the message- or decode??
+             
             // Check the type of the received message using getType()
             if (msg.getType().equals("Create")) {
                 handleCreateMessage((Message) msg);

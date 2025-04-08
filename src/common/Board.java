@@ -1,5 +1,5 @@
 package common;
-
+import common.protocol.messages.Post;
 import merrimackutil.json.types.JSONArray;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
@@ -8,8 +8,6 @@ import merrimackutil.json.JSONSerializable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import common.protocol.messages.Post;
 
 /**
  * This class represents a board of encrypted posts.

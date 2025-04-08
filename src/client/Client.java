@@ -13,9 +13,11 @@ import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
+import common.protocol.user_creation.UserBuilder;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
 import merrimackutil.codec.Base32;
+import merrimackutil.json.types.JSONObject;
 import merrimackutil.util.Tuple;
 
 public class Client {
@@ -130,6 +132,7 @@ public class Client {
         Security.addProvider(new BouncyCastleProvider());
 
         processArgs(args);
+        UserBuilder msgBuilder = null;
         
         if (create) {
             System.out.print("Enter a password: ");
@@ -148,9 +151,17 @@ public class Client {
             Socket socket = new Socket(host, port);
             channel = new ProtocolChannel(socket);
         
-            CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
+            JSONObject usermsg = new JSONObject();
+            usermsg.put("type", "create");
+            usermsg.put("username", user);
+            usermsg.put("password", password);
+            usermsg.put("publickey", pubKeyEncoded);
+           
+           System.out.println("Sending create message: " + usermsg.toString());
+           Message msg = UserBuilder.buildMessage(usermsg.toString());
+         
             //send the user to the server
-            channel.sendMessage((Message) msg);
+            channel.sendMessage(msg);
     
             
             // Receive the response

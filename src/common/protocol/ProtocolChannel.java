@@ -20,9 +20,7 @@ import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.JsonIO;
 import java.net.Socket;
 import java.util.Scanner;
-
 import common.protocol.messages.StatusMessage;
-
 import java.io.PrintWriter;
 import java.io.InvalidObjectException;
 import java.util.HashMap;
@@ -58,6 +56,9 @@ import java.io.IOException;
       in = new Scanner(sock.getInputStream());
       knownTypes = new HashMap<>();
       doTracing = false;
+      
+      // Debug log for channel creation
+      System.out.println("[DEBUG] ProtocolChannel created. Socket connected: " + sock.isConnected());
     }
 
     /**
@@ -66,6 +67,7 @@ import java.io.IOException;
     public void toggleTracing()
     {
       doTracing = !doTracing;
+      System.out.println("[DEBUG] Tracing toggled. Current state: " + (doTracing ? "Enabled" : "Disabled"));
     }
 
    /**
@@ -75,6 +77,7 @@ import java.io.IOException;
     public void addMessageType(Message msg)
     {
       knownTypes.put(msg.getType(), msg);
+      System.out.println("[DEBUG] Added new message type: " + msg.getType());
     }
 
    /**
@@ -84,7 +87,10 @@ import java.io.IOException;
    public void sendMessage(Message msg)
    {
     trace("Local -> Remote: " + msg);
-    JsonIO.writeSerializedObject(msg, out);
+    
+  
+        JsonIO.writeSerializedObject(msg, out);
+        System.out.println("[DEBUG] Sent message: " + msg);
    }
 
    /**
@@ -98,16 +104,28 @@ import java.io.IOException;
     */
    public Message receiveMessage() throws InvalidObjectException
    {
-    String raw = in.nextLine();
+    String raw = null;
+    try {
+        raw = in.nextLine();
+    } catch (Exception ex) {
+        System.out.println("[ERROR] Error while reading message: " + ex.getMessage());
+    }
+
+    if (raw == null) {
+        System.out.println("[ERROR] No data received, raw message is null.");
+        return null;
+    }
+
     JSONObject obj = JsonIO.readObject(raw);
     Message m;
-    if (knownTypes.containsKey(obj.getString("type")))
-      m = knownTypes.get(obj.getString("type")).decode(obj);
-    else
-      throw new InvalidObjectException("Not a valid message.");
-
-    trace("Remote -> Local: " + m);
-    return m;
+    if (knownTypes.containsKey(obj.getString("type"))) {
+        m = knownTypes.get(obj.getString("type")).decode(obj);
+        trace("Remote -> Local: " + m);
+        return m;
+    } else {
+        System.out.println("[ERROR] Invalid message type: " + obj.getString("type"));
+        throw new InvalidObjectException("Not a valid message.");
+    }
    }
 
    /**
@@ -118,16 +136,16 @@ import java.io.IOException;
     try
     {
       sock.close();
+      System.out.println("[DEBUG] Socket closed successfully.");
     }
     catch(IOException ex)
     {
-      // Swallow this exception, if the socket can't be closed.
-      // it's not a problem for us.
+      System.out.println("[ERROR] Failed to close socket: " + ex.getMessage());
     }
    }
 
    /**
-    * Output message {@code msg} is tracing is enabled.
+    * Output message {@code msg} if tracing is enabled.
     * @param msg the message to display.
     */
    private void trace(String msg)
@@ -140,8 +158,4 @@ import java.io.IOException;
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'sendMessage'");
    }
-
-
-
-
- }
+}
