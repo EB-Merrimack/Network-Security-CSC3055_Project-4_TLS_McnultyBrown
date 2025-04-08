@@ -1,6 +1,5 @@
 package common.protocol.messages;
 
-import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
 
@@ -16,7 +15,7 @@ import common.protocol.post.Post;
 /**
  * Represents a single encrypted post message.
  */
-public class PostMessage extends Post implements JSONSerializable {
+public class PostMessage extends Post {
     private String recipient;
     private String ciphertext;
     private String encryptedKey;

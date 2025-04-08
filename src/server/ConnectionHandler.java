@@ -4,9 +4,7 @@ package server;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.net.Socket;
-import java.util.Base64;
 
-import common.SecretStore;
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostBuilder;
@@ -16,13 +14,7 @@ import merrimackutil.util.NonceCache;
 public class ConnectionHandler implements Runnable {
 
     private ProtocolChannel channel;
-    private NonceCache nonceCache;
-    private boolean doDebug = false;
-    private String serviceName;
-    private String secret;
     private byte[] sessionKey;
-    private static String id = null;
-
     /**
      * Constructs a new connection handler for the given connection.
      * @param sock the socket to communicate over.
@@ -36,9 +28,6 @@ public class ConnectionHandler implements Runnable {
     public ConnectionHandler(Socket sock, boolean doDebug, String serviceName, String secret, NonceCache nonceCache) throws IllegalArgumentException, IOException
     {
         this.channel = new ProtocolChannel(sock);
-        this.nonceCache = nonceCache;
-        this.serviceName = serviceName;
-        this.secret = secret;
     }
 
     /**
