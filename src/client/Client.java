@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.InputStreamReader;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -155,13 +156,19 @@ public class Client {
     }
 
     private static boolean authenticateUser() throws Exception {
-            System.out.print("Enter password: ");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String password = reader.readLine();
-        
-            System.out.print("Enter OTP: ");
-            String otp = reader.readLine();
-        
+            Console console = System.console();
+
+    if (console == null) {
+        throw new IllegalStateException("Console is not available. Make sure you're running from a terminal.");
+    }
+
+    // Hide password input
+    char[] passwordChars = console.readPassword("Enter password: ");
+    String password = new String(passwordChars);
+
+    // Show OTP input (normal)
+    String otp = console.readLine("Enter OTP: ");
+
 
         // Start TLS
         SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
