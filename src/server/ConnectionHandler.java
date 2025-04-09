@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.Socket;
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
-import common.protocol.messages.PostBuilder;
 import common.protocol.messages.PostMessage;
 import merrimackutil.util.NonceCache;
 
@@ -73,7 +72,13 @@ public class ConnectionHandler implements Runnable {
                 }
     
                 System.out.println("[SERVER] Received post payload: " + payload);
-                channel.sendMessage(PostBuilder.buildMessage(payload));
+                PostMessage responsePost = new PostMessage(
+                    postMsg.getUser(),           // recipient
+                    payload,                     // decrypted message (plaintext)
+                    postMsg.getWrappedKey(),     // re-use original wrapped key
+                    postMsg.getIv()              // re-use original IV
+                );
+                channel.sendMessage(responsePost);
             } else {
                 System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
             }

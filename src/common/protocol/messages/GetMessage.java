@@ -3,14 +3,15 @@ package common.protocol.messages;
 import common.protocol.Message;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.types.JSONObject;
+
 import java.io.InvalidObjectException;
 
-public class PubKeyRequest implements Message {
+public class GetMessage implements Message {
     private String user;
 
-    public PubKeyRequest() {}
+    public GetMessage() {}
 
-    public PubKeyRequest(String user) {
+    public GetMessage(String user) {
         this.user = user;
     }
 
@@ -20,13 +21,13 @@ public class PubKeyRequest implements Message {
 
     @Override
     public String getType() {
-        return "PubKeyRequest";
+        return "GetMessage";
     }
 
     @Override
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
-        obj.put("type", "PubKeyRequest");
+        obj.put("type", "GetMessage");
         obj.put("user", user);
         return obj;
     }
@@ -36,19 +37,17 @@ public class PubKeyRequest implements Message {
         if (!(obj instanceof JSONObject)) {
             throw new InvalidObjectException("Expected JSONObject.");
         }
-
         JSONObject json = (JSONObject) obj;
         this.user = json.getString("user");
     }
 
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
-        String user = obj.getString("user");
-        return new PubKeyRequest(user);
+        return new GetMessage(obj.getString("user"));
     }
 
     @Override
     public String toString() {
-        return "[PubKeyRequest] user=" + user;
+        return "[GetMessage] user=" + user;
     }
 }

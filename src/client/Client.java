@@ -3,21 +3,27 @@ package client;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
 import java.util.Base64;
 
+import javax.crypto.Cipher;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.bouncycastle.util.Objects;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.security.Security;
+import java.security.spec.X509EncodedKeySpec;
 
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 
 import common.protocol.messages.AuthenticateMessage;
+import common.protocol.messages.GetMessage;
+import common.protocol.messages.GetResponseMessage;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
@@ -107,62 +113,57 @@ public class Client {
 
         // Validate and dispatch
         if (create) {
-            if (create) {
-                if (user == null || host == null || port == 0) {
-                    System.err.println("Error: Missing required arguments for --create.");
-                    usage();
-                }
-                System.out.println("Creating account for user: " + user);
-                // The actual create logic is already handled in main()
-            } else if (post) {
-                if (user == null || host == null || port == 0 || recvr == null || message == null) {
-                    System.err.println("Error: Missing required arguments for --post.");
-                    usage();
-                }
-                if (!authenticateUser()) {
-                    System.out.println("Authentication failed.");
-                    return;
-                }
-                System.out.println("Authenticated.");
-                System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
-            
-                // Establish TLS connection
-                SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-                socket.startHandshake();
-            
-                PostClient postClient = new PostClient(socket);
-                postClient.sendMessage(recvr, message);  // Only send once
-            
-            } else if (get) {
-                if (user == null || host == null || port == 0 || privKey == null) {
-                    System.err.println("Error: Missing required arguments for --get.");
-                    usage();
-                }
-                if (!authenticateUser()) {
-                    System.out.println("Authentication failed.");
-                    return;
-                }
-                System.out.println("Authenticated.");
-                System.out.println("Retrieving posts for user: " + user);
-            
-                // TODO: Load private key from Base64
-                // TODO: Establish connection and retrieve/decrypt messages
-            
-            } else {
-                System.err.println("Error: No valid action specified.");
+            if (user == null || host == null || port == 0) {
+                System.err.println("Error: Missing required arguments for --create.");
                 usage();
             }
+            System.out.println("Creating account for user: " + user);
+            // Create logic runs in main()
+        } else if (post) {
+            if (user == null || host == null || port == 0 || recvr == null || message == null) {
+                System.err.println("Error: Missing required arguments for --post.");
+                usage();
+            }
+            if (!authenticateUser()) {
+                System.out.println("Authentication failed.");
+                return;
+            }
+            System.out.println("Authenticated.");
+            System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
+        
+            // TLS and send message
+            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+            SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
+            socket.startHandshake();
+        
+            PostClient postClient = new PostClient(socket);
+            postClient.sendMessage(recvr, message);
+        } else if (get) {
+            if (user == null || host == null || port == 0 || privKey == null) {
+                System.err.println("Error: Missing required arguments for --get.");
+                usage();
+            }
+            if (!authenticateUser()) {
+                System.out.println("Authentication failed.");
+                return;
+            }
+            System.out.println("Authenticated.");
+            System.out.println("Retrieving posts for user: " + user);
+            handleGet();
+        } else {
+            System.err.println("Error: No valid action specified.");
+            usage();
         }
     }
 
     private static boolean authenticateUser() throws Exception {
-        System.out.print("Enter password: ");
-        String password = new String(System.console().readPassword());
-
-        System.out.print("Enter OTP: ");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String otp = reader.readLine();
+            System.out.print("Enter password: ");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            String password = reader.readLine();
+        
+            System.out.print("Enter OTP: ");
+            String otp = reader.readLine();
+        
 
         // Start TLS
         SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -186,6 +187,70 @@ public class Client {
         System.out.println(status.getPayload());
         return status.getStatus(); // true = success
     }
+
+    private static void handleGet() throws Exception {
+    // Prompt password + OTP, reuse authenticateUser()
+    if (!authenticateUser()) {
+        System.out.println("Authentication failed.");
+        return;
+    }
+
+    // Load private key from Base64 string
+    byte[] privKeyBytes = java.util.Base64.getDecoder().decode(privKey);
+    KeyFactory keyFactory = KeyFactory.getInstance("ElGamal", "BC");
+    PrivateKey privateKey = keyFactory.generatePrivate(new X509EncodedKeySpec(privKeyBytes));
+
+    // Set up TLS + ProtocolChannel
+    SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+    SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
+    socket.startHandshake();
+
+    channel = new ProtocolChannel(socket);
+    channel.addMessageType(new GetMessage());
+    channel.addMessageType(new GetResponseMessage());
+    channel.addMessageType(new PostMessage());
+    channel.addMessageType(new StatusMessage());
+
+    // Send get message
+    channel.sendMessage(new GetMessage(user));
+
+    Message response = channel.receiveMessage();
+    if (response instanceof StatusMessage) {
+        StatusMessage status = (StatusMessage) response;
+        System.out.println("Error: " + status.getPayload());
+        return;
+    }
+
+    if (!(response instanceof GetResponseMessage)) {
+        System.out.println("Unexpected response from server.");
+        return;
+    }
+
+    // Process posts
+    GetResponseMessage getResp = (GetResponseMessage) response;
+    System.out.println("You have " + getResp.getPosts().size() + " message(s):\n");
+
+    for (PostMessage post : getResp.getPosts()) {
+        try {
+            // Unwrap AES key with ElGamal private key
+            byte[] wrappedKey = java.util.Base64.getDecoder().decode(post.getWrappedKey());
+            Cipher elgamal = Cipher.getInstance("ElGamal/None/PKCS1Padding", "BC");
+            elgamal.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] aesKeyBytes = elgamal.doFinal(wrappedKey);
+
+            // Decrypt the message
+            String plaintext = post.getDecryptedPayload(aesKeyBytes);
+
+            System.out.println("From: " + post.getUser());
+            System.out.println("Message: " + plaintext);
+            System.out.println("--------------");
+        } catch (Exception e) {
+            System.out.println("[Error decrypting post]: " + e.getMessage());
+        }
+    }
+
+    channel.closeChannel();
+}
 
 
     public static void main(String[] args) throws Exception {
