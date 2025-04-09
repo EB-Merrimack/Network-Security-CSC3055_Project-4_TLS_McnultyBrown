@@ -1,5 +1,7 @@
 package client;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
