@@ -37,8 +37,6 @@
     <!-- Copy client truststore to dist/ -->
     <copy file="truststore.jks" tofile="${dist}/truststore.jks" />
 
-    <!-- Copy config file to dist -->
-    <copy file="src/server/config.json" tofile="${dist}/config.json" />
 
     <!-- Assemble the verification server program -->
     <jar jarfile="${dist}/client.jar" basedir="${build}">

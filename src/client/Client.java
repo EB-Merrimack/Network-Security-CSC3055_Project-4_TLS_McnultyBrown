@@ -14,6 +14,10 @@ import java.security.Security;
 
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
+
+import common.protocol.messages.AuthenticateMessage;
+import common.protocol.messages.PostMessage;
+import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
@@ -101,34 +105,84 @@ public class Client {
 
         // Validate and dispatch
         if (create) {
-            if (user == null || host == null || port == 0) {
-                System.err.println("Error: Missing required arguments for --create.");
+            if (create) {
+                if (user == null || host == null || port == 0) {
+                    System.err.println("Error: Missing required arguments for --create.");
+                    usage();
+                }
+                System.out.println("Creating account for user: " + user);
+                // The actual create logic is already handled in main()
+            } else if (post) {
+                if (user == null || host == null || port == 0 || recvr == null || message == null) {
+                    System.err.println("Error: Missing required arguments for --post.");
+                    usage();
+                }
+                if (!authenticateUser()) {
+                    System.out.println("Authentication failed.");
+                    return;
+                }
+                System.out.println("Authenticated.");
+                System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
+            
+                // Establish TLS connection
+                SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
+                socket.startHandshake();
+            
+                PostClient postClient = new PostClient(socket);
+                postClient.sendMessage(recvr, message);  // Only send once
+            
+            } else if (get) {
+                if (user == null || host == null || port == 0 || privKey == null) {
+                    System.err.println("Error: Missing required arguments for --get.");
+                    usage();
+                }
+                if (!authenticateUser()) {
+                    System.out.println("Authentication failed.");
+                    return;
+                }
+                System.out.println("Authenticated.");
+                System.out.println("Retrieving posts for user: " + user);
+            
+                // TODO: Load private key from Base64
+                // TODO: Establish connection and retrieve/decrypt messages
+            
+            } else {
+                System.err.println("Error: No valid action specified.");
                 usage();
             }
-            System.out.println("Creating account for user: " + user);
-            // TODO: Add create logic
-        } else if (post) {
-            if (user == null || host == null || port == 0 || recvr == null || message == null) {
-                System.err.println("Error: Missing required arguments for --post.");
-                usage();
-            }
-            System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
-            Socket socket = new Socket(host, port);
-             // Instantiate PostClient correctly using the new keyword
-             PostClient postClient = new PostClient(socket);
-             postClient.sendMessage(recvr, message);
-            postClient.sendMessage(recvr, message);
-        } else if (get) {
-            if (user == null || host == null || port == 0 || privKey == null) {
-                System.err.println("Error: Missing required arguments for --get.");
-                usage();
-            }
-            System.out.println("Retrieving posts for user: " + user);
-            // TODO: Add get logic
-        } else {
-            System.err.println("Error: No valid action specified.");
-            usage();
         }
+    }
+
+    private static boolean authenticateUser() throws Exception {
+        System.out.print("Enter password: ");
+        String password = new String(System.console().readPassword());
+
+        System.out.print("Enter OTP: ");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String otp = reader.readLine();
+
+        // Start TLS
+        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
+        socket.startHandshake();
+        channel = new ProtocolChannel(socket);
+
+        channel.addMessageType(new StatusMessage());
+        channel.addMessageType(new AuthenticateMessage());
+
+        AuthenticateMessage authMsg = new AuthenticateMessage(user, password, otp);
+        channel.sendMessage(authMsg);
+
+        Message response = channel.receiveMessage();
+        if (!(response instanceof StatusMessage)) {
+            System.out.println("Unexpected response.");
+            return false;
+        }
+
+        StatusMessage status = (StatusMessage) response;
+        System.out.println(status.getPayload());
+        return status.getStatus(); // true = success
     }
 
 
