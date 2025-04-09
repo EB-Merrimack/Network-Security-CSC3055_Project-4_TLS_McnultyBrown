@@ -1,23 +1,11 @@
 package common.protocol.user_creation;
 
 import merrimackutil.codec.Base32;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.crypto.macs.HMac;
-import org.bouncycastle.crypto.params.KeyParameter;
-
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.UserDatabase;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.Mac;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.HashMap;

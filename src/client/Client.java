@@ -1,23 +1,10 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.InvalidObjectException;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -27,17 +14,10 @@ import java.security.Security;
 
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
-import common.protocol.messages.PostMessage;
-import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
-import merrimackutil.codec.Base32;
-import merrimackutil.json.JsonIO;
-import merrimackutil.json.parser.JSONParser;
-import merrimackutil.json.types.JSONObject;
-import merrimackutil.json.types.JSONType;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
 
