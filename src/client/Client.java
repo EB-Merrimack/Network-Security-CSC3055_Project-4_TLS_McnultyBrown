@@ -2,7 +2,6 @@ package client;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.Socket;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -25,7 +24,6 @@ import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.GetMessage;
 import common.protocol.messages.GetResponseMessage;
 import common.protocol.messages.PostMessage;
-import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
