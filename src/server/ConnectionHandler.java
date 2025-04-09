@@ -2,15 +2,10 @@
 package server;
 
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.net.Socket;
-import java.util.Base64;
-
-import common.SecretStore;
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostMessage;
-import common.protocol.user_creation.CreateMessage;
 import merrimackutil.util.NonceCache;
 
 public class ConnectionHandler implements Runnable {
@@ -21,8 +16,6 @@ public class ConnectionHandler implements Runnable {
     private String serviceName;
     private String secret;
     private byte[] sessionKey;
-    private static String id = null;
-
     /**
      * Constructs a new connection handler for the given connection.
      * @param sock the socket to communicate over.

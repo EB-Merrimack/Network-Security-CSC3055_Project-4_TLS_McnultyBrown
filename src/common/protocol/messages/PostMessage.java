@@ -1,6 +1,7 @@
 package common.protocol.messages;
 
 import common.protocol.Message;
+import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.types.JSONObject;
 
