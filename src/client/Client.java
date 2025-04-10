@@ -299,8 +299,9 @@ try {
             System.out.print("Enter a password: ");
             String password = new String(System.console().readPassword());
         
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal", "BC");
-            keyGen.initialize(2048);
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal");
+            keyGen.initialize(512); //FOR TESTING
+            //keyGen.initialize(2048);
             KeyPair kp = keyGen.generateKeyPair();
         
             String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
@@ -308,6 +309,10 @@ try {
         
             System.out.println("Public key: " + pubKeyEncoded);
             System.out.println("Private key: " + privKeyEncoded); // Prompt user to save
+            System.out.println("Key algorithm: " + kp.getPublic().getAlgorithm());
+            System.out.println("Key format: " + kp.getPublic().getFormat());
+            System.out.println("📦 Base64 pubkey: " + Base64.getEncoder().encodeToString(kp.getPublic().getEncoded()));
+
         
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
