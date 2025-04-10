@@ -77,28 +77,29 @@ public class AuthenticationHandler {
         }
     }
 
-    private static boolean verifyTOTP(String base32Secret, String otp) {
+    private static boolean verifyTOTP(String base64Secret, String otp) {
         try {
             if (DEBUG) {
-                System.out.println("[DEBUG] Verifying OTP with TOTP key: " + base32Secret);
+                System.out.println("[DEBUG] Verifying OTP with TOTP key (Base64): " + base64Secret);
             }
-
-            byte[] key = Base32.decode(base32Secret);
-
+    
+            // 🔥 Decode from Base64 (this matches what's stored in the users.json file)
+            byte[] key = Base64.getDecoder().decode(base64Secret);
+    
             long timeIndex = Instant.now().getEpochSecond() / 30;
-
+    
             if (DEBUG) {
                 System.out.println("[DEBUG] Time index for TOTP: " + timeIndex);
             }
-
-            // Try timeIndex - 1, timeIndex, timeIndex + 1 for minor time skew
+    
+            // Try ±3 time steps to account for clock skew
             for (int i = -3; i <= 3; i++) {
                 String candidate = TOTP.generateTOTP(key, timeIndex + i);
-
+    
                 if (DEBUG) {
                     System.out.println("[DEBUG] OTP candidate for timeIndex + " + i + ": " + candidate);
                 }
-
+    
                 if (candidate.equals(otp)) {
                     if (DEBUG) {
                         System.out.println("[DEBUG] OTP match found: " + otp);
@@ -106,9 +107,9 @@ public class AuthenticationHandler {
                     return true;
                 }
             }
-
+    
             return false;
-
+    
         } catch (Exception e) {
             if (DEBUG) {
                 System.out.println("[DEBUG] OTP verification failed due to exception: " + e.getMessage());
