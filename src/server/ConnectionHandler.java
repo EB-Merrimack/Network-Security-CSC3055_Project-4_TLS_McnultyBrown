@@ -123,7 +123,7 @@ public class ConnectionHandler implements Runnable {
     
             // Call account creation logic
             common.protocol.messages.StatusMessage response =
-                common.protocol.user_creation.AccountCreation.createAccount(username, password, publicKey, userfile);
+                common.protocol.user_creation.CreateAccount.createAccount(username, password, publicKey, userfile);
     
             // Send the response back to the client
             channel.sendMessage(response);
