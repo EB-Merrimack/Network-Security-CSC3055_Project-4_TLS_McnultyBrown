@@ -100,5 +100,10 @@ public class UserDatabase {
     public static void save(String userfile) {
         saveUsers(userfile); // Delegate to the existing saveUsers method
     }
+
+    public static User get(String username) {
+        return userMap.get(username);
+    }
+    
     
 }

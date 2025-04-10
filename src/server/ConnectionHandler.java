@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.net.Socket;
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
+import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.PostMessage;
+import common.protocol.messages.StatusMessage;
+import common.protocol.user_auth.AuthenticationHandler;
 import merrimackutil.util.NonceCache;
 
 public class ConnectionHandler implements Runnable {
@@ -61,7 +64,19 @@ public class ConnectionHandler implements Runnable {
                 // Handle CreateMessage (unencrypted)
                 handleCreateMessage(msg);
                 return;
-            } else if (msg instanceof PostMessage) {
+            } else if (msg.getType().equals("Authenticate")) {
+    boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
+
+    if (success) {
+        channel.sendMessage(new StatusMessage(true, "Authentication successful."));
+    } else {
+        channel.sendMessage(new StatusMessage(false, "Authentication failed. Check your password or OTP."));
+    }
+    return;
+}
+
+            
+            else if (msg instanceof PostMessage) {
                 // Handle PostMessage (encrypted)
                 PostMessage postMsg = (PostMessage) msg;
                 String payload = postMsg.getDecryptedPayload(sessionKey);
