@@ -33,18 +33,12 @@ public class UserDatabase {
         }
     }
 
-    static {
-        loadUsers("common/protocol/user_auth/users.json");
-    }
-
+    
     public static boolean containsKey(String username) {
         return userMap.containsKey(username);
     }
 
-    public static void put(String username, User newUser) {
-        userMap.put(username, newUser);
-        saveUsers("common/protocol/user_auth/users.json");
-    }
+ 
 
     private static void loadUsers(String userfile) {
         try {
