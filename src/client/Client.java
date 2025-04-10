@@ -29,6 +29,7 @@ import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
+import merrimackutil.codec.Base32;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
 
@@ -345,10 +346,12 @@ try {
             StatusMessage status = (StatusMessage) response;
             if (status.getStatus()) {
                 System.out.println("Account created successfully.");
-                System.out.println("Your private key (SAVE THIS SAFELY!):\n" + privKeyEncoded);
-        
+                System.out.println("Private Key:\n" + privKeyEncoded);
+
                 String totpKey = status.getPayload();
-                System.out.println("TOTP Secret (Base32 for FreeOTP/Google Authenticator):\n" + totpKey);
+                byte[] totpBytes = Base64.getDecoder().decode(totpKey);
+                String base32Totp = Base32.encodeToString(totpBytes, true); // no padding
+                System.out.println("Base 32 Key:\n" + base32Totp);
             } else {
                 System.out.println("Failed to create account: " + status.getPayload());
             }
