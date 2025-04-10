@@ -3,6 +3,9 @@ package common.protocol.user_auth;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import java.nio.ByteBuffer;
+import java.time.Instant;
+
 public class TOTP {
 
     private static final int OTP_LENGTH = 6;
@@ -17,11 +20,10 @@ public class TOTP {
      */
     public static String generateTOTP(byte[] secret, long timeIndex) {
         try {
-            byte[] timeBytes = new byte[8];
-            for (int i = 7; i >= 0; i--) {
-                timeBytes[i] = (byte) (timeIndex & 0xFF);
-                timeIndex >>= 8;
-            }
+            // Convert the time index to byte[] (8 bytes for long)
+            ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+            buffer.putLong(timeIndex);
+            byte[] timeBytes = buffer.array();
 
             // HMAC-SHA1 generation
             Mac hmac = Mac.getInstance("HmacSHA1");
@@ -30,7 +32,7 @@ public class TOTP {
             byte[] hash = hmac.doFinal(timeBytes);
 
             // Truncate the hash to get the OTP
-            int offset = hash[19] & 0xF;
+            int offset = hash[19] & 0xF;  // Last byte's low nibble
             int binary = ((hash[offset] & 0x7f) << 24) |
                          ((hash[offset + 1] & 0xff) << 16) |
                          ((hash[offset + 2] & 0xff) << 8) |
@@ -53,13 +55,18 @@ public class TOTP {
      * @return true if OTP is valid, false otherwise
      */
     public static boolean verifyTOTP(byte[] secret, String otp) {
-        long timeIndex = System.currentTimeMillis() / 1000 / TIME_STEP;
+        long timeIndex = Instant.now().getEpochSecond() / TIME_STEP;
+        System.out.println("Current Time Index: " + timeIndex);
         for (int i = -1; i <= 1; i++) {
             String generatedOtp = generateTOTP(secret, timeIndex + i);
+            System.out.println("Generated OTP for T+" + i + ": " + generatedOtp);
             if (generatedOtp != null && generatedOtp.equals(otp)) {
                 return true;
             }
         }
-        return false;
+        return false;    
     }
+ 
+
+ 
 }
