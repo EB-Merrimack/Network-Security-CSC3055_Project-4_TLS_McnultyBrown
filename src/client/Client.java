@@ -168,31 +168,54 @@ public class Client {
 
     // Show OTP input (normal)
     String otp = console.readLine("Enter OTP: ");
+      System.out.println("[DEBUG] Authenticating user: " + user + " with password: " + password + " and OTP: " + otp);
+// Start TLS
+try {
+    System.out.println("[DEBUG] Starting TLS connection to " + host + ":" + port);
 
+    SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+    SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
+    System.out.println("[DEBUG] TLS handshake started...");
+    socket.startHandshake();
+    System.out.println("[DEBUG] TLS handshake completed.");
 
-        // Start TLS
-        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-        socket.startHandshake();
-        channel = new ProtocolChannel(socket);
+    // Create protocol channel
+    channel = new ProtocolChannel(socket);
+    System.out.println("[DEBUG] ProtocolChannel created and connected.");
 
-        channel.addMessageType(new StatusMessage());
-        channel.addMessageType(new AuthenticateMessage());
+    // Register message types
+    channel.addMessageType(new StatusMessage());
+    channel.addMessageType(new AuthenticateMessage());
+    System.out.println("[DEBUG] Message types added to the channel.");
 
-        AuthenticateMessage authMsg = new AuthenticateMessage(user, password, otp);
-        channel.sendMessage(authMsg);
+    // Prepare and send AuthenticateMessage
+    AuthenticateMessage authMsg = new AuthenticateMessage(user, password, otp);
+    System.out.println("[DEBUG] Sending AuthenticateMessage: " + authMsg.toJSONType()); // Debug output for the message
 
-        Message response = channel.receiveMessage();
-        if (!(response instanceof StatusMessage)) {
-            System.out.println("Unexpected response.");
-            return false;
-        }
+    // Send authentication message
+    channel.sendMessage(authMsg);
+    System.out.println("[DEBUG] AuthenticateMessage sent.");
 
-        StatusMessage status = (StatusMessage) response;
-        System.out.println(status.getPayload());
-        return status.getStatus(); // true = success
+    // Receive response
+    Message response = channel.receiveMessage();
+    System.out.println("[DEBUG] Response received: " + response);
+
+    // Check the response type
+    if (!(response instanceof StatusMessage)) {
+        System.out.println("[ERROR] Unexpected response: " + response.getClass().getName());
+        return false;
     }
 
+    // Process status message
+    StatusMessage status = (StatusMessage) response;
+    System.out.println("[DEBUG] Status message received: " + status.getPayload());
+    return status.getStatus(); // true = success
+} catch (Exception e) {
+    e.printStackTrace();
+    System.out.println("[ERROR] Exception during TLS connection or message processing: " + e.getMessage());
+    return false;
+}
+    }
     private static void handleGet() throws Exception {
     // Prompt password + OTP, reuse authenticateUser()
     if (!authenticateUser()) {

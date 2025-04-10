@@ -64,7 +64,7 @@ public class CreateMessage implements Message {
 
     @Override
     public String getType() {
-        System.out.println("[DEBUG] getType() called");
+        System.out.println("[DEBUG] getType() called, returning 'Create'");
         return "Create";
     }
 

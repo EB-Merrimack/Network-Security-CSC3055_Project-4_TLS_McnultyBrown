@@ -34,6 +34,9 @@ public class ConnectionHandler implements Runnable {
         this.channel = new ProtocolChannel(sock);
         this.channel.addMessageType(new common.protocol.user_creation.CreateMessage());
         this.channel.addMessageType(new common.protocol.messages.StatusMessage());
+        this.channel.addMessageType(new PostMessage());
+        this.channel.addMessageType(new AuthenticateMessage());
+        this.doDebug = doDebug;
 
         this.nonceCache = nonceCache;
         this.serviceName = serviceName;
@@ -64,7 +67,7 @@ public class ConnectionHandler implements Runnable {
                 // Handle CreateMessage (unencrypted)
                 handleCreateMessage(msg);
                 return;
-            } else if (msg.getType().equals("Authenticate")) {
+            } else if (msg.getType().equals("authenticate")) {
     boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
 
     if (success) {
