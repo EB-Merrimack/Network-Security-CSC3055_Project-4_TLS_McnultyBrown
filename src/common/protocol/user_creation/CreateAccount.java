@@ -66,7 +66,7 @@ public class CreateAccount {
 
 
             // Generate TOTP key
-           byte[] totpKeyBytes = new byte[32]; // 256-bit key (or 64 bytes for extra security)
+           byte[] totpKeyBytes = new byte[64]; // 256-bit key (or 64 bytes for extra security)
             random.nextBytes(totpKeyBytes);
             String totpKey = Base64.getEncoder().encodeToString(totpKeyBytes);
             
