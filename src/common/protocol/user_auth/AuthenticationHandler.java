@@ -39,9 +39,14 @@ public class AuthenticationHandler {
 
             // 2. Validate password hash
             byte[] saltBytes = Base64.getDecoder().decode(user.getSalt());
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, 10000, 256);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            byte[] hash = factory.generateSecret(spec).getEncoded();
+            byte[] hash = org.bouncycastle.crypto.generators.SCrypt.generate(
+                password.getBytes(),       // password from input
+                saltBytes,                 // stored salt
+                2048,                      // cost
+                8,                         // block size
+                1,                         // parallelization
+                16                         // key length (128 bits)
+            );
             String passwordHash = Base64.getEncoder().encodeToString(hash);
 
             if (DEBUG) {
