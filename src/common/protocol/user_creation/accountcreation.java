@@ -72,7 +72,7 @@ public class AccountCreation {
             );
     
             // Save user to database and write back to file
-          
+            UserDatabase.put(username, user);
             UserDatabase.save(userfile);
     
             // Respond with base64 TOTP key
