@@ -24,6 +24,7 @@ public class User implements JSONSerializable {
 
     public String getSalt() { return salt; }
     public String getPass() { return pass; }
+    public String getPasswordHash() { return pass; } // ✅ Implemented
     public String getTotpKey() { return totpKey; }
     public String getUser() { return user; }
     public String getPubkey() { return pubkey; }

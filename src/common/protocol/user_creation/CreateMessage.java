@@ -1,12 +1,11 @@
 package common.protocol.user_creation;
 
-import merrimackutil.json.*;
 import merrimackutil.json.types.*;
 import common.protocol.Message;
 
 import java.io.InvalidObjectException;
 
-public class CreateMessage implements Message, JSONSerializable {
+public class CreateMessage implements Message {
     private String user;
     private String pass;
     private String pubkey;
@@ -65,7 +64,7 @@ public class CreateMessage implements Message, JSONSerializable {
 
     @Override
     public String getType() {
-        System.out.println("[DEBUG] getType() called");
+        System.out.println("[DEBUG] getType() called, returning 'Create'");
         return "Create";
     }
 

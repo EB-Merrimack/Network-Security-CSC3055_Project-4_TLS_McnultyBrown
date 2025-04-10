@@ -33,17 +33,30 @@ public class UserDatabase {
         }
     }
 
-    static {
-        loadUsers("common/protocol/user_auth/users.json");
+    // Check method to verify if the username exists in the database
+    public static boolean check(String username) {
+        Object userfile=server.Configuration.getUsersFile();
+        // Ensure userMap is loaded from the file
+        if (userfile == null || userMap.isEmpty()) {
+            System.out.println("[UserDatabase] Loading users from file: " + userfile);
+            loadUsers((String) userfile);
+        }
+    
+        // Debugging: log the check process
+        System.out.println("[UserDatabase] Checking if user exists: " + username);
+    
+        if (userMap.containsKey(username)) {
+            System.out.println("[UserDatabase] User " + username + " found.");
+            return true;
+        } else {
+            System.out.println("[UserDatabase] User " + username + " not found.");
+            return false;
+        }
     }
+    
 
     public static boolean containsKey(String username) {
         return userMap.containsKey(username);
-    }
-
-    public static void put(String username, User newUser) {
-        userMap.put(username, newUser);
-        saveUsers("common/protocol/user_auth/users.json");
     }
 
     private static void loadUsers(String userfile) {
@@ -100,5 +113,8 @@ public class UserDatabase {
     public static void save(String userfile) {
         saveUsers(userfile); // Delegate to the existing saveUsers method
     }
-    
+
+    public static User get(String username) {
+        return userMap.get(username);
+    }
 }

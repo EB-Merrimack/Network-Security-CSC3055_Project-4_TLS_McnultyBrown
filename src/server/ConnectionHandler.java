@@ -2,16 +2,13 @@
 package server;
 
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.net.Socket;
-import java.util.Base64;
-
-import common.SecretStore;
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
-import common.protocol.messages.PostBuilder;
+import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.PostMessage;
-import common.protocol.user_creation.CreateMessage;
+import common.protocol.messages.StatusMessage;
+import common.protocol.user_auth.AuthenticationHandler;
 import merrimackutil.util.NonceCache;
 
 public class ConnectionHandler implements Runnable {
@@ -22,8 +19,6 @@ public class ConnectionHandler implements Runnable {
     private String serviceName;
     private String secret;
     private byte[] sessionKey;
-    private static String id = null;
-
     /**
      * Constructs a new connection handler for the given connection.
      * @param sock the socket to communicate over.
@@ -39,6 +34,9 @@ public class ConnectionHandler implements Runnable {
         this.channel = new ProtocolChannel(sock);
         this.channel.addMessageType(new common.protocol.user_creation.CreateMessage());
         this.channel.addMessageType(new common.protocol.messages.StatusMessage());
+        this.channel.addMessageType(new PostMessage());
+        this.channel.addMessageType(new AuthenticateMessage());
+        this.doDebug = doDebug;
 
         this.nonceCache = nonceCache;
         this.serviceName = serviceName;
@@ -69,7 +67,19 @@ public class ConnectionHandler implements Runnable {
                 // Handle CreateMessage (unencrypted)
                 handleCreateMessage(msg);
                 return;
-            } else if (msg instanceof PostMessage) {
+            } else if (msg.getType().equals("authenticate")) {
+    boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
+
+    if (success) {
+        channel.sendMessage(new StatusMessage(true, "Authentication successful."));
+    } else {
+        channel.sendMessage(new StatusMessage(false, "Authentication failed. Check your password or OTP."));
+    }
+    return;
+}
+
+            
+            else if (msg instanceof PostMessage) {
                 // Handle PostMessage (encrypted)
                 PostMessage postMsg = (PostMessage) msg;
                 String payload = postMsg.getDecryptedPayload(sessionKey);
@@ -80,7 +90,13 @@ public class ConnectionHandler implements Runnable {
                 }
     
                 System.out.println("[SERVER] Received post payload: " + payload);
-                channel.sendMessage(PostBuilder.buildMessage(payload));
+                PostMessage responsePost = new PostMessage(
+                    postMsg.getUser(),           // recipient
+                    payload,                     // decrypted message (plaintext)
+                    postMsg.getWrappedKey(),     // re-use original wrapped key
+                    postMsg.getIv()              // re-use original IV
+                );
+                channel.sendMessage(responsePost);
             } else {
                 System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
             }
