@@ -6,6 +6,8 @@ import merrimackutil.json.JSONSerializable;
 
 import java.io.InvalidObjectException;
 
+import common.protocol.messages.PostMessage;
+
 /**
  * Represents a single encrypted post on the board.
  */
@@ -30,6 +32,10 @@ public class Post implements JSONSerializable {
     public String getMessage() { return message; }
     public String getWrappedKey() { return wrappedKey; }
     public String getIv() { return iv; }
+
+    public PostMessage toPostMessage() {
+        return new PostMessage(user, message, wrappedKey, iv);
+    }
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {

@@ -6,6 +6,9 @@ import common.protocol.user_auth.UserDatabase;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+
+import org.bouncycastle.crypto.generators.SCrypt;
+
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.HashMap;
@@ -13,7 +16,7 @@ import java.util.Map;
 import java.util.Base64;
 
 
-public class AccountCreation {
+public class CreateAccount {
 
     // Simulated database (in a real-world scenario, this could be a database connection)
     private static Map<String, User> userDatabase = new HashMap<>();
@@ -52,16 +55,21 @@ public class AccountCreation {
             String salt = Base64.getEncoder().encodeToString(saltBytes);
     
             // Hash password with PBKDF2 and salt
-            KeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, 10000, 256);
+            /*KeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, 10000, 256);
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
             byte[] hash = factory.generateSecret(spec).getEncoded();
             String passwordHash = Base64.getEncoder().encodeToString(hash);
-    
+    */
+            
+            byte[] hash = SCrypt.generate(password.getBytes(), saltBytes, 2048, 8, 1, 16);
+            String passwordHash = Base64.getEncoder().encodeToString(hash);
+
+
             // Generate TOTP key
-            byte[] totpBytes = new byte[20]; // 160-bit secret
-            random.nextBytes(totpBytes);
-            String totpKey = Base32.encodeToString(totpBytes, true);
-    
+           byte[] totpKeyBytes = new byte[64]; // 256-bit key (or 64 bytes for extra security)
+            random.nextBytes(totpKeyBytes);
+            String totpKey = Base64.getEncoder().encodeToString(totpKeyBytes);
+            
             // Create User object
             common.protocol.user_auth.User user = new common.protocol.user_auth.User(
                 salt,
@@ -72,7 +80,7 @@ public class AccountCreation {
             );
     
             // Save user to database and write back to file
-          
+            UserDatabase.put(username, user);
             UserDatabase.save(userfile);
     
             // Respond with base64 TOTP key

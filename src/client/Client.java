@@ -29,6 +29,7 @@ import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
+import merrimackutil.codec.Base32;
 import merrimackutil.util.NonceCache;
 import merrimackutil.util.Tuple;
 
@@ -65,6 +66,8 @@ public class Client {
     }
 
     public static void processArgs(String[] args) throws Exception {
+       System.out.println("args: " + args.length);
+       System.out.println("args: " + args);
         if (args.length == 0) {
             usage();
         }
@@ -119,10 +122,12 @@ public class Client {
             System.out.println("Creating account for user: " + user);
             // Create logic runs in main()
         } else if (post) {
+            System.out.println("post called");
             if (user == null || host == null || port == 0 || recvr == null || message == null) {
                 System.err.println("Error: Missing required arguments for --post.");
                 usage();
             }
+            System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
             if (!authenticateUser()) {
                 System.out.println("Authentication failed.");
                 return;
@@ -294,8 +299,9 @@ try {
             System.out.print("Enter a password: ");
             String password = new String(System.console().readPassword());
         
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal", "BC");
-            keyGen.initialize(2048);
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal");
+            keyGen.initialize(512); //FOR TESTING
+            //keyGen.initialize(2048);
             KeyPair kp = keyGen.generateKeyPair();
         
             String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
@@ -303,6 +309,10 @@ try {
         
             System.out.println("Public key: " + pubKeyEncoded);
             System.out.println("Private key: " + privKeyEncoded); // Prompt user to save
+            System.out.println("Key algorithm: " + kp.getPublic().getAlgorithm());
+            System.out.println("Key format: " + kp.getPublic().getFormat());
+            System.out.println("📦 Base64 pubkey: " + Base64.getEncoder().encodeToString(kp.getPublic().getEncoded()));
+
         
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
@@ -341,10 +351,12 @@ try {
             StatusMessage status = (StatusMessage) response;
             if (status.getStatus()) {
                 System.out.println("Account created successfully.");
-                System.out.println("Your private key (SAVE THIS SAFELY!):\n" + privKeyEncoded);
-        
+                System.out.println("Private Key:\n" + privKeyEncoded);
+
                 String totpKey = status.getPayload();
-                System.out.println("TOTP Secret (Base32 for FreeOTP/Google Authenticator):\n" + totpKey);
+                byte[] totpBytes = Base64.getDecoder().decode(totpKey);
+                String base32Totp = Base32.encodeToString(totpBytes, true); // no padding
+                System.out.println("Base 32 Key:\n" + base32Totp);
             } else {
                 System.out.println("Failed to create account: " + status.getPayload());
             }
