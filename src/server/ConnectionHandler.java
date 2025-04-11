@@ -4,6 +4,7 @@ package server;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import common.protocol.Message;
@@ -12,11 +13,15 @@ import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.GetMessage;
 import common.protocol.messages.GetResponseMessage;
 import common.protocol.messages.PostMessage;
+import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
+import common.protocol.user_auth.User;
+import common.protocol.user_auth.UserDatabase;
 import merrimackutil.util.NonceCache;
 import common.Board;
 import common.protocol.post.Post;
+
 
 public class ConnectionHandler implements Runnable {
 
@@ -45,6 +50,8 @@ public class ConnectionHandler implements Runnable {
         this.channel.addMessageType(new common.protocol.messages.StatusMessage());
         this.channel.addMessageType(new PostMessage());
         this.channel.addMessageType(new AuthenticateMessage());
+        this.channel.addMessageType(new PubKeyRequest());
+        this.channel.addMessageType(new PostMessage());
         this.channel.addMessageType(new GetMessage());
         this.channel.addMessageType(new GetResponseMessage());
         this.doDebug = doDebug;
@@ -89,7 +96,21 @@ public class ConnectionHandler implements Runnable {
                 channel.sendMessage(new StatusMessage(false, "Authentication failed. Check your password or OTP."));
             }
             return;
-        } else if (msg instanceof PostMessage) {
+        } else if (msg.getType().equals("PubKeyRequest")) {
+            System.out.println("[SERVER] Received PubKeyRequest.");
+        
+            PubKeyRequest pubKeyRequest = (PubKeyRequest) msg;
+            String username = pubKeyRequest.getUser();  // Use getUser() here
+            System.out.println("[SERVER] Public key requested for user: " + username);
+        
+            String base64Key = UserDatabase.getEncodedPublicKey(username) ;  // You might want to change this to take a username
+            System.out.println("[SERVER] Sending public key (Base64): " + base64Key);
+        
+            channel.sendMessage((Message) new StatusMessage(true, base64Key));
+            System.out.println("[SERVER] Public key sent.");
+        } else if (msg.getType().equals("post")) {
+            // Handle PostMessage
+            System.out.println("[SERVER] Handling PostMessage");
             PostMessage postMsg = (PostMessage) msg;
             String plaintext = postMsg.getDecryptedPayload(sessionKey);
 
@@ -97,12 +118,13 @@ public class ConnectionHandler implements Runnable {
                 System.out.println("[SERVER] Decrypted payload is null.");
                 channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
                 return;
-            }
+            } 
+            
 
             System.out.println("[SERVER] Received post payload: " + plaintext);
 
             // Wrap it in a Post object
-            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
+            Post post = new Post(postMsg.getRecvr(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
 
             // Add post to board and save
             board.addPost(post);

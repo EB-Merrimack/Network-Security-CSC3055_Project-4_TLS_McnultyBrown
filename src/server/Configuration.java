@@ -16,7 +16,7 @@ public class Configuration implements JSONSerializable
   private int port;
   private boolean doDebug;
   private static String usersFile;
-  private String boardFile;
+  private static String boardFile;
   private String keystoreFile;
   private String keystorePass;
   private String configDir;
@@ -64,7 +64,7 @@ public class Configuration implements JSONSerializable
    * Get the path to the bulletin board file.
    * @return the file path as a string.
    */
-  public String getBoardFile()
+  public static String getBoardFile()
   {
     return boardFile;
   }

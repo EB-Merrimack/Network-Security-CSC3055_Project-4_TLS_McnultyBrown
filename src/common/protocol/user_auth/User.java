@@ -4,13 +4,14 @@ import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.types.JSONObject;
 import java.io.InvalidObjectException;
+import java.util.Base64;
 
 public class User implements JSONSerializable {
     private String salt;
     private String pass;
     private String totpKey;
-    private String user;
-    private String pubkey;
+    private static String user;
+    private static String pubkey;
 
     public User() {}
 
@@ -26,8 +27,8 @@ public class User implements JSONSerializable {
     public String getPass() { return pass; }
     public String getPasswordHash() { return pass; } // ✅ Implemented
     public String getTotpKey() { return totpKey; }
-    public String getUser() { return user; }
-    public String getPubkey() { return pubkey; }
+    public static String getUser() { return user; }
+    public static String getPubkey() { return pubkey; }
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {

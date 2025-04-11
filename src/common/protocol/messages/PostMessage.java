@@ -14,30 +14,30 @@ import javax.crypto.spec.SecretKeySpec;
  * Represents a message posted to the bulletin board.
  */
 public class PostMessage implements Message {
-    private String user;        // recipient username
-    private String message;     // base64 AES ciphertext
-    private String wrappedkey;  // base64 ElGamal-wrapped AES key
-    private String iv;          // base64 AES IV
+    private String recvr;        // recipient username
+    private String ciphertext;   // base64 AES ciphertext
+    private String wrappedKey;   // base64 ElGamal-wrapped AES key
+    private String iv;           // base64 AES IV
 
     public PostMessage() {}
 
-    public PostMessage(String user, String message, String wrappedkey, String iv) {
-        this.user = user;
-        this.message = message;
-        this.wrappedkey = wrappedkey;
+    public PostMessage(String recvr, String ciphertext, String wrappedKey, String iv) {
+        this.recvr = recvr;
+        this.ciphertext = ciphertext;
+        this.wrappedKey = wrappedKey;
         this.iv = iv;
     }
 
-    public String getUser() {
-        return user;
+    public String getRecvr() {
+        return recvr;
     }
 
-    public String getMessage() {
-        return message;
+    public String getCiphertext() {
+        return ciphertext;
     }
 
     public String getWrappedKey() {
-        return wrappedkey;
+        return wrappedKey;
     }
 
     public String getIv() {
@@ -45,22 +45,22 @@ public class PostMessage implements Message {
     }
     
     public String getDecryptedPayload(byte[] sessionKey) {
-    try {
-        byte[] ivBytes = Base64.getDecoder().decode(getIv());
-        byte[] cipherBytes = Base64.getDecoder().decode(getMessage());
+        try {
+            byte[] ivBytes = Base64.getDecoder().decode(getIv());
+            byte[] cipherBytes = Base64.getDecoder().decode(getCiphertext());
 
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
-        SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
+            SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
 
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
-        byte[] plainBytes = cipher.doFinal(cipherBytes);
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+            byte[] plainBytes = cipher.doFinal(cipherBytes);
 
-        return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
-    } catch (Exception e) {
-        throw new RuntimeException("Failed to decrypt payload", e);
+            return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt payload", e);
+        }
     }
-}
 
     @Override
     public String getType() {
@@ -71,9 +71,9 @@ public class PostMessage implements Message {
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
         obj.put("type", "post");
-        obj.put("user", user);
-        obj.put("message", message);
-        obj.put("wrappedkey", wrappedkey);
+        obj.put("recvr", recvr);
+        obj.put("ciphertext", ciphertext);
+        obj.put("wrappedKey", wrappedKey);
         obj.put("iv", iv);
         return obj;
     }
@@ -85,24 +85,24 @@ public class PostMessage implements Message {
         }
 
         JSONObject json = (JSONObject) obj;
-        this.user = json.getString("user");
-        this.message = json.getString("message");
-        this.wrappedkey = json.getString("wrappedkey");
+        this.recvr = json.getString("recvr");
+        this.ciphertext = json.getString("ciphertext");
+        this.wrappedKey = json.getString("wrappedKey");
         this.iv = json.getString("iv");
     }
 
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
         return new PostMessage(
-            obj.getString("user"),
-            obj.getString("message"),
-            obj.getString("wrappedkey"),
+            obj.getString("recvr"),
+            obj.getString("ciphertext"),
+            obj.getString("wrappedKey"),
             obj.getString("iv")
         );
     }
 
     @Override
     public String toString() {
-        return "[PostMessage] to=" + user;
+        return "[PostMessage] to=" + recvr;
     }
 }

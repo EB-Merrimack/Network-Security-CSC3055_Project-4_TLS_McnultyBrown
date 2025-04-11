@@ -8,7 +8,7 @@ import common.protocol.Message;
 
 public class StatusMessage implements Message {
     private boolean status;
-    private String payload;
+    private static String payload;
 
     public StatusMessage() {}
     public StatusMessage(boolean status, String payload) {
@@ -17,7 +17,7 @@ public class StatusMessage implements Message {
     }
 
     public boolean getStatus() { return status; }
-    public String getPayload() { return payload; }
+    public static String getPayload() { return payload; }
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
