@@ -1,6 +1,5 @@
 {
    "entries" : [
- 
       {
          "salt" : "6Ij5MfaQdMpq7+5IEbXQzA==",
          "pass" : "IxU4JjwXtbwZoJxAmKynZA==",
@@ -14,6 +13,13 @@
          "totp-key" : "r4hWQy2cCFUjEMFx0PkF7rj96cR8MpWrRu9qSoJa4BU2TiVN08Y96HIYhO9t0CMU3hb6z131BncxF3PjhRMVFA==",
          "user" : "bob",
          "pubkey" : "MIHZMIGQBgYrDgcCAQEwgYUCQQD8poLOjhLKuibvzPcRDlJtsHiwXt7LzR60ogjzrhYXrgHzW5Gkfm32NBPF4S7QiZvNEyrNUNmRUb3EPuc3WS4XAkBnhHGyepz0TukaScUUfbGpqvJE8FpDTWSGkx0tFCcbnjUDC3H9c9oXkGmzLik1Yw4cIGI1TQ2iCmxBblC+eUykA0QAAkEAzCkL2eArTcJHh/tEZUmRG3+7+ROoW+RKHAzK+4P9aGsTYhrZYgnp0L6dEECBWZK/AfLYExU56Zg2Jy+x+++niA=="
+      },
+      {
+         "salt" : "fOKFthVLSH5snzQINVk3ew==",
+         "pass" : "OR/bIBITI2kiUgortqBAjw==",
+         "totp-key" : "WG/Kd5jOKBy9e7sYrYoxkoS3zb0YVgdFnNVm1rWU+PEHXFzbRuXrK5OWY+yUddJPjnLg7oF7mA9IOwq57epY1g==",
+         "user" : "eb!",
+         "pubkey" : "MIHZMIGQBgYrDgcCAQEwgYUCQQD8poLOjhLKuibvzPcRDlJtsHiwXt7LzR60ogjzrhYXrgHzW5Gkfm32NBPF4S7QiZvNEyrNUNmRUb3EPuc3WS4XAkBnhHGyepz0TukaScUUfbGpqvJE8FpDTWSGkx0tFCcbnjUDC3H9c9oXkGmzLik1Yw4cIGI1TQ2iCmxBblC+eUykA0QAAkEAjqcf/+wgzQ9ra1cZWudNhzOLUD/z6u4SxOUGxiLAaBPRqH2YQ23oMlrNGZbWHOsVVgd+9rrqTwCP8eeWzda2aQ=="
       },
       {
          "salt" : "gdOiZDTmLsc8hChbAZvwqA==",

@@ -4,6 +4,7 @@ import merrimackutil.json.*;
 import merrimackutil.json.types.*;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.util.HashMap;
@@ -33,7 +34,6 @@ public class UserDatabase {
         }
     }
 
-    
     public static boolean containsKey(String username) {
         return userMap.containsKey(username);
     }
@@ -101,28 +101,65 @@ public class UserDatabase {
         return userMap.get(username);
     }
 
-        // Check method to verify if the username exists in the database
-        public static boolean check(String username) {
-            Object userfile=server.Configuration.getUsersFile();
-            // Ensure userMap is loaded from the file
-            if (userfile == null || userMap.isEmpty()) {
-                System.out.println("[UserDatabase] Loading users from file: " + userfile);
-                loadUsers((String) userfile);
-            }
-        
-            // Debugging: log the check process
-            System.out.println("[UserDatabase] Checking if user exists: " + username);
-        
-            if (userMap.containsKey(username)) {
-                System.out.println("[UserDatabase] User " + username + " found.");
-                return true;
-            } else {
-                System.out.println("[UserDatabase] User " + username + " not found.");
-                return false;
-            }
+    public static String getPubkey(String username) {
+        return userMap.get(username).getPubkey();
+    }
+
+    // Check method to verify if the username exists in the database
+    public static boolean check(String username) {
+        Object userfile = server.Configuration.getUsersFile();
+        // Ensure userMap is loaded from the file
+        if (userfile == null || userMap.isEmpty()) {
+            System.out.println("[UserDatabase] Loading users from file: " + userfile);
+            loadUsers((String) userfile);
         }
-        
-    
-    
-    
+
+        // Debugging: log the check process
+        System.out.println("[UserDatabase] Checking if user exists: " + username);
+
+        if (userMap.containsKey(username)) {
+            System.out.println("[UserDatabase] User " + username + " found.");
+            return true;
+        } else {
+            System.out.println("[UserDatabase] User " + username + " not found.");
+            return false;
+        }
+    }
+
+    // Method to retrieve the encoded public key of a user
+     // Method to retrieve the encoded public key of a user
+     public static String getEncodedPublicKey(String username) {
+        try {
+            // Ensure userMap is populated
+            Object userfile = server.Configuration.getUsersFile();
+            if (userfile == null || userMap == null || userMap.isEmpty()) {
+                System.out.println("[UserDatabase] Loading users from file: " + userfile);
+                loadUsers((String) userfile); // Load users into userMap
+            }
+
+            // Check if user exists
+            if (!userMap.containsKey(username)) {
+                System.out.println("[UserDatabase] User not found: " + username);
+                return null;
+            }
+
+           
+
+            // Get the Base64-encoded public key
+            String pubkey = UserDatabase.getPubkey(username);
+
+            if (pubkey == null || pubkey.isEmpty()) {
+                System.out.println("[UserDatabase] Public key for user " + username + " is not available.");
+                return null;
+            }
+
+            // Return the Base64-encoded public key string
+            return pubkey;
+
+        } catch (Exception e) {
+            System.out.println("[UserDatabase] Error reading user public key: " + e.getMessage());
+            return null;
+        }
+    }
+
 }
