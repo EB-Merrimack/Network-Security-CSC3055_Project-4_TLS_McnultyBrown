@@ -10,7 +10,7 @@ public class User implements JSONSerializable {
     private String salt;
     private String pass;
     private String totpKey;
-    private String user;
+    private static String user;
     private static String pubkey;
 
     public User() {}
@@ -27,7 +27,7 @@ public class User implements JSONSerializable {
     public String getPass() { return pass; }
     public String getPasswordHash() { return pass; } // ✅ Implemented
     public String getTotpKey() { return totpKey; }
-    public String getUser() { return user; }
+    public static String getUser() { return user; }
     public static String getPubkey() { return pubkey; }
 
     @Override

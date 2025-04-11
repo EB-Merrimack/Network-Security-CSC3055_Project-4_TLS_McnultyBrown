@@ -124,7 +124,7 @@ public class ConnectionHandler implements Runnable {
             System.out.println("[SERVER] Received post payload: " + plaintext);
 
             // Wrap it in a Post object
-            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
+            Post post = new Post(postMsg.getRecvr(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
 
             // Add post to board and save
             board.addPost(post);

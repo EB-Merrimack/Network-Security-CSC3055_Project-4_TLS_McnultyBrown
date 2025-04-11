@@ -58,15 +58,26 @@ public class PostClient {
         System.out.println("[Debug Post Client] Generated AES key.");
 
         // Step 5: Encrypt the message using AES/GCM/NoPadding
+        // Step 5: Encrypt the message using AES/GCM/NoPadding
+
+        // Debugging: print the message being encrypted
+        System.out.println("[Debug Post Client] Plaintext message: " + plaintext);
+
+        // Generate a random 12-byte IV (Initialization Vector)
         byte[] iv = new byte[12];
         new SecureRandom().nextBytes(iv);
         System.out.println("[Debug Post Client] Generated IV: " + Base64.getEncoder().encodeToString(iv));
 
+        // Initialize AES cipher with GCM mode and NoPadding
         Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
+        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv); // 128-bit tag length
         aesCipher.init(Cipher.ENCRYPT_MODE, aesKey, gcmSpec);
+
+        // Encrypt the plaintext
         byte[] ciphertext = aesCipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
-        System.out.println("[Debug Post Client] AES-encrypted ciphertext: " + Base64.getEncoder().encodeToString(ciphertext));
+
+        // Debugging: print the AES-encrypted ciphertext
+        System.out.println("[Debug Post Client] AES-encrypted ciphertext (Base64): " + Base64.getEncoder().encodeToString(ciphertext));
 
         // Step 6: Encrypt the AES key using ElGamal (key wrapping)
         Cipher elgamalCipher = Cipher.getInstance("ElGamal/None/PKCS1Padding", "BC");
@@ -77,13 +88,13 @@ public class PostClient {
         // Step 7: Construct and send the PostMessage
         PostMessage post = new PostMessage(
             recvr,
-            Base64.getEncoder().encodeToString(ciphertext),
+            Base64.getEncoder().encodeToString(ciphertext), //where the message is 
             Base64.getEncoder().encodeToString(wrappedKey),
             Base64.getEncoder().encodeToString(iv)
         );
-        System.out.println("[Debug Post Client] Sending PostMessage...");
+        System.out.println("[Debug Post Client] Sending PostMessage..."+post);
 
-        channel.sendMessage(post);
+        channel.sendMessage((PostMessage) post);
 
         // Step 8: Receive and display status response
         StatusMessage response = (StatusMessage) channel.receiveMessage();
