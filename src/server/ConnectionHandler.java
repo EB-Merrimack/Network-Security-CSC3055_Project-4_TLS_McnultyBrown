@@ -3,13 +3,20 @@ package server;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.AuthenticateMessage;
+import common.protocol.messages.GetMessage;
+import common.protocol.messages.GetResponseMessage;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
 import merrimackutil.util.NonceCache;
+import common.Board;
+import common.protocol.post.Post;
 
 public class ConnectionHandler implements Runnable {
 
@@ -19,6 +26,8 @@ public class ConnectionHandler implements Runnable {
     private String serviceName;
     private String secret;
     private byte[] sessionKey;
+    private static Board board = new Board();
+
     /**
      * Constructs a new connection handler for the given connection.
      * @param sock the socket to communicate over.
@@ -36,6 +45,8 @@ public class ConnectionHandler implements Runnable {
         this.channel.addMessageType(new common.protocol.messages.StatusMessage());
         this.channel.addMessageType(new PostMessage());
         this.channel.addMessageType(new AuthenticateMessage());
+        this.channel.addMessageType(new GetMessage());
+        this.channel.addMessageType(new GetResponseMessage());
         this.doDebug = doDebug;
 
         this.nonceCache = nonceCache;
@@ -58,6 +69,8 @@ public class ConnectionHandler implements Runnable {
        */
       private void runCommunication() {
         try {
+            board.loadFromFile();
+
             System.out.println("[DEBUG] Waiting to receive a message...");
             Message msg = channel.receiveMessage();
             System.out.println("[DEBUG] Received message: " + msg);
@@ -68,43 +81,72 @@ public class ConnectionHandler implements Runnable {
                 handleCreateMessage(msg);
                 return;
             } else if (msg.getType().equals("authenticate")) {
-    boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
+            boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
 
-    if (success) {
-        channel.sendMessage(new StatusMessage(true, "Authentication successful."));
-    } else {
-        channel.sendMessage(new StatusMessage(false, "Authentication failed. Check your password or OTP."));
+            if (success) {
+                channel.sendMessage(new StatusMessage(true, "Authentication successful."));
+            } else {
+                channel.sendMessage(new StatusMessage(false, "Authentication failed. Check your password or OTP."));
+            }
+            return;
+        } else if (msg instanceof PostMessage) {
+            PostMessage postMsg = (PostMessage) msg;
+            String plaintext = postMsg.getDecryptedPayload(sessionKey);
+
+            if (plaintext == null) {
+                System.out.println("[SERVER] Decrypted payload is null.");
+                channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
+                return;
+            }
+
+            System.out.println("[SERVER] Received post payload: " + plaintext);
+
+            // Wrap it in a Post object
+            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
+
+            // Add post to board and save
+            board.addPost(post);
+            board.saveToFile();
+
+            // Confirm success
+            channel.sendMessage(new StatusMessage(true, "Success!"));
+            
+
+            } else if (msg instanceof GetMessage) {
+                GetMessage getMsg = (GetMessage) msg;
+                String username = getMsg.getUser();
+            
+                board.loadFromFile(); // ensure latest board
+            
+                // ✅ Step 1: Find all posts addressed to the requested user
+                List<Post> userPosts = new ArrayList<>();
+                for (Post post : board.getPosts()) {
+                    if (post.getUser().equals(username)) {
+                        userPosts.add(post);
+                    }
+                }
+            
+                // ✅ Step 2: Convert Post → PostMessage
+                List<PostMessage> converted = new ArrayList<>();
+                for (Post post : userPosts) {
+                    converted.add(post.toPostMessage()); // make sure to add this helper in Post.java
+                }
+            
+                // ✅ Step 3: Send response
+                GetResponseMessage response = new GetResponseMessage(converted);
+                channel.sendMessage(response);
+            
+        } else {
+            System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
+        }
+
+    } catch (Exception ex) {
+        ex.printStackTrace();
     }
-    return;
 }
 
             
-            else if (msg instanceof PostMessage) {
-                // Handle PostMessage (encrypted)
-                PostMessage postMsg = (PostMessage) msg;
-                String payload = postMsg.getDecryptedPayload(sessionKey);
-    
-                if (payload == null) {
-                    System.out.println("[SERVER] Decrypted payload is null.");
-                    return;
-                }
-    
-                System.out.println("[SERVER] Received post payload: " + payload);
-                PostMessage responsePost = new PostMessage(
-                    postMsg.getUser(),           // recipient
-                    payload,                     // decrypted message (plaintext)
-                    postMsg.getWrappedKey(),     // re-use original wrapped key
-                    postMsg.getIv()              // re-use original IV
-                );
-                channel.sendMessage(responsePost);
-            } else {
-                System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
-            }
-    
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+       
 
     private void handleCreateMessage(Message msg) {
         try {
