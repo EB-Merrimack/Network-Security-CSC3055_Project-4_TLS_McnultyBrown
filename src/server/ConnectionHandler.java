@@ -191,20 +191,14 @@ public class ConnectionHandler implements Runnable {
         try {
             System.out.println("[SERVER] Handling PostMessage");
     
-            // Decrypt the payload
-            String plaintext = postMsg.getDecryptedPayload(sessionKey);
+            // reformat PostMessage to Post
+            String Type=postMsg.getType();
+            String User=postMsg.getUser();
+            String Message=postMsg.getMessage();
+            String WrappedKey=postMsg.getWrappedKey();
+            String IV=postMsg.getIv();
     
-            if (plaintext == null) {
-                System.out.println("[SERVER] Decrypted payload is null.");
-                channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
-                return;
-            }
-    
-            System.out.println("[SERVER] Received post payload: " + plaintext);
-    
-            // Wrap in Post object
-            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
-    
+            Post post = new Post( User, Message, WrappedKey, IV,Type);
             // Add post to board and save
             board.addPost(post);
             board.saveToFile();
