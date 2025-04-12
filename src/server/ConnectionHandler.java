@@ -77,14 +77,23 @@ public class ConnectionHandler implements Runnable {
       private void runCommunication() {
         try {
             board.loadFromFile();
-
-            System.out.println("[DEBUG] Waiting to receive a message...");
-            Message msg = channel.receiveMessage();
-            System.out.println("[DEBUG] Received message: " + msg);
-
+            while (true) {
+                System.out.println("[DEBUG] Waiting to receive a message...");
+                Message msg = null;
     
+                try {
+                    // Try to receive the message
+                    msg = channel.receiveMessage();
+                } catch (NullPointerException e) {
+                    // If a NullPointerException occurs, log it and continue waiting for the next message
+                    System.err.println("[ERROR] NullPointerException encountered while receiving message.");
+                    System.err.println("[DEBUG] Received message: " + msg);
+                    // You can decide whether to break out of the loop or continue waiting
+                    continue; // Continue waiting for the next message
+                }
+                System.out.println("[DEBUG] Received message: " + msg);
             if (msg.getType().equals("Create")) {
-                // Handle CreateMessage (unencrypted)
+                // Handle CreateMessage 
                 handleCreateMessage(msg);
                 return;
             } else if (msg.getType().equals("authenticate")) {
@@ -108,33 +117,14 @@ public class ConnectionHandler implements Runnable {
         
             channel.sendMessage((Message) new StatusMessage(true, base64Key));
             System.out.println("[SERVER] Public key sent.");
+
         } else if (msg.getType().equals("post")) {
             // Handle PostMessage
             System.out.println("[SERVER] Handling PostMessage");
-            PostMessage postMsg = (PostMessage) msg;
-            String plaintext = postMsg.getDecryptedPayload(sessionKey);
-
-            if (plaintext == null) {
-                System.out.println("[SERVER] Decrypted payload is null.");
-                channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
-                return;
-            } 
-            
-
-            System.out.println("[SERVER] Received post payload: " + plaintext);
-
-            // Wrap it in a Post object
-            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
-
-            // Add post to board and save
-            board.addPost(post);
-            board.saveToFile();
-
-            // Confirm success
-            channel.sendMessage(new StatusMessage(true, "Success!"));
-            
-
-            } else if (msg instanceof GetMessage) {
+           handlePostMessage((PostMessage) msg);
+           return;
+        }
+          else if (msg instanceof GetMessage) {
                 GetMessage getMsg = (GetMessage) msg;
                 String username = getMsg.getUser();
             
@@ -162,7 +152,8 @@ public class ConnectionHandler implements Runnable {
             System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
         }
 
-    } catch (Exception ex) {
+    }
+}catch (Exception ex) {
         ex.printStackTrace();
     }
 }
@@ -196,5 +187,31 @@ public class ConnectionHandler implements Runnable {
             e.printStackTrace();
         }
     }
+    private void handlePostMessage(PostMessage postMsg) {
+        try {
+            System.out.println("[SERVER] Handling PostMessage");
+    
+            // reformat PostMessage to Post
+            String Type=postMsg.getType();
+            String User=postMsg.getUser();
+            String Message=postMsg.getMessage();
+            String WrappedKey=postMsg.getWrappedKey();
+            String IV=postMsg.getIv();
+    
+            Post post = new Post( User, Message, WrappedKey, IV,Type);
+            // Add post to board and save
+            board.addPost(post);
+            board.loadAndAddPost(post);
+    
+            channel.sendMessage(new StatusMessage(true, "Success!"));
+            System.out.println("[SERVER] Post successful.");
+            return;
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+                channel.sendMessage(new StatusMessage(false, "Post failed due to server error."));
+    }
+    
     
 }

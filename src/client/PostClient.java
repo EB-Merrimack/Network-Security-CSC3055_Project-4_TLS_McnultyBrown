@@ -5,6 +5,8 @@ import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
+import common.protocol.post.Post;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -28,7 +30,7 @@ public class PostClient {
         channel.addMessageType(new StatusMessage());
     }
 
-    public void sendMessage(String recvr, String plaintext) throws Exception {
+    public void sendMessage(String user, String recvr, String plaintext) throws Exception {
         System.out.println("[Debug Post Client] Starting sendMessage to " + recvr + " with plaintext: " + plaintext);
 
         // Step 1: Request recipient's public key
@@ -76,26 +78,58 @@ public class PostClient {
 
         // Step 7: Construct and send the PostMessage
         PostMessage post = new PostMessage(
-            recvr,
+            user,
             Base64.getEncoder().encodeToString(ciphertext),
             Base64.getEncoder().encodeToString(wrappedKey),
             Base64.getEncoder().encodeToString(iv)
         );
-        System.out.println("[Debug Post Client] Sending PostMessage...");
+        System.out.println("[Debug Post Client] Sending PostMessage... " + post);
 
         channel.sendMessage(post);
-
-        // Step 8: Receive and display status response
-        StatusMessage response = (StatusMessage) channel.receiveMessage();
-        System.out.println("[Debug Post Client] Received status response.");
-        if (response.getStatus()) {
-            System.out.println("[Debug Post Client] Message sent successfully: " + response.getPayload());
-        } else {
-            System.out.println("[Debug Post Client] Failed to post message: " + response.getPayload());
+        System.out.println("[Debug Post Client] Sent PostMessage.");
+        
+        StatusMessage response = null;
+        int maxRetries = 10;
+        int retryDelayMillis = 500;
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                Object msg = channel.receiveMessage();
+                if (msg instanceof StatusMessage) {
+                    response = (StatusMessage) msg;
+                    break;  // Exit loop once we get the valid response
+                } else {
+                    System.err.println("[Debug Post Client] Unexpected message type received.");
+                }
+            } catch (NullPointerException e) {
+                System.err.println("[Debug Post Client] Waiting for response... attempt " + attempt);
+            } catch (Exception e) {
+                System.err.println("[Debug Post Client] Error receiving response: " + e.getMessage());
+                e.printStackTrace();
+            }
+        
+            try {
+                Thread.sleep(retryDelayMillis);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;  // Exit loop if interrupted
+            }
         }
-
+        
+        if (response != null) {
+            // Check the status and print the result accordingly
+            if (response.getStatus()) {
+                System.out.println("[Debug Post Client] Message sent successfully: " + response.getPayload());
+            } else {
+                System.out.println("[Debug Post Client] Failed to post message: " + response.getPayload());
+            }
+        } else {
+            System.out.println("[Debug Post Client] No valid status response received.");
+        }
+        
         // Step 9: Close the channel
         System.out.println("[Debug Post Client] Closing channel.");
         channel.closeChannel();
-    }
+        
+}
 }
