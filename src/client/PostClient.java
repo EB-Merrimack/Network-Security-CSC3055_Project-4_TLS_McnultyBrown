@@ -81,7 +81,7 @@ public class PostClient {
             Base64.getEncoder().encodeToString(wrappedKey),
             Base64.getEncoder().encodeToString(iv)
         );
-        System.out.println("[Debug Post Client] Sending PostMessage...");
+        System.out.println("[Debug Post Client] Sending PostMessage..."+post);
 
         channel.sendMessage(post);
 
