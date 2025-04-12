@@ -26,7 +26,6 @@ import common.protocol.messages.GetMessage;
 import common.protocol.messages.GetResponseMessage;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.StatusMessage;
-import common.protocol.user_auth.User;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
 import merrimackutil.cli.OptionParser;
@@ -275,7 +274,7 @@ try {
             // Decrypt the message
             String plaintext = post.getDecryptedPayload(aesKeyBytes);
 
-            System.out.println("From: " + User.getUser());
+            System.out.println("From: " + post.getUser());
             System.out.println("Message: " + plaintext);
             System.out.println("--------------");
         } catch (Exception e) {
