@@ -5,6 +5,8 @@ import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
+import common.protocol.post.Post;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -83,7 +85,8 @@ public class PostClient {
         );
         System.out.println("[Debug Post Client] Sending PostMessage..."+post);
 
-        channel.sendMessage((Message) post);
+        channel.sendMessage((PostMessage) post);
+        System.out.println("[Debug Post Client] Sent PostMessage.");
 
         // Step 8: Receive and display status response
         StatusMessage response = (StatusMessage) channel.receiveMessage();
