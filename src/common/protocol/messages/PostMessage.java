@@ -93,7 +93,7 @@ public class PostMessage implements Message {
         obj.put("message", message);
         obj.put("wrappedkey", wrappedkey);
         obj.put("iv", iv);
-        System.out.println("[DEBUG] Serialized PostMessage: " + obj.toString());
+        System.out.println("[DEBUG] Serialized PostMessage: " + obj);
         return obj;
     }
 
