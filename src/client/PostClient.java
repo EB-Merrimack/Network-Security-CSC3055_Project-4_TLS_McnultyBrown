@@ -1,5 +1,6 @@
 package client;
 
+import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
@@ -28,62 +29,77 @@ public class PostClient {
         channel.addMessageType(new StatusMessage());
     }
 
-    public void sendMessage(String recvr, String plaintext) throws Exception {
-        // Step 1: Request recipient's public key
-        PubKeyRequest pubKeyRequest = new PubKeyRequest(recvr);
-        channel.sendMessage(pubKeyRequest);
-
-        // Step 2: Receive public key response
-        StatusMessage pubKeyResponse = (StatusMessage) channel.receiveMessage();
-        if (!pubKeyResponse.getStatus()) {
-            System.out.println("Failed to retrieve public key: " + pubKeyResponse.getPayload());
+    public void sendMessage(String receiver, String plaintext) throws Exception {
+        System.out.println("[CLIENT] Starting sendMessage...");
+        
+        // Step 1: Send public key request
+        System.out.println("[CLIENT] Sending PubKeyRequest for user: " + receiver);
+        PubKeyRequest request = new PubKeyRequest(receiver);
+        channel.sendMessage(request);
+    
+        System.out.println("[CLIENT] Waiting for PubKeyRequest response...");
+        Message response = channel.receiveMessage();
+    
+        if (response == null) {
+            System.out.println("[CLIENT] ERROR: No response received from server (null).");
             return;
         }
-
-        // Step 3: Decode recipient's ElGamal public key
-        byte[] pubKeyBytes = Base64.getDecoder().decode(pubKeyResponse.getPayload());
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(pubKeyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("ElGamal", "BC");
-        PublicKey recipientPubKey = keyFactory.generatePublic(keySpec);
-
-        // Step 4: Generate a 256-bit AES key
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(256);
-        SecretKey aesKey = keyGen.generateKey();
-
-        // Step 5: Encrypt the message using AES/GCM/NoPadding
+    
+        System.out.println("[CLIENT] Got response class: " + response.getClass().getName());
+    
+        if (!(response instanceof StatusMessage)) {
+            throw new RuntimeException("Unexpected response to PubKeyRequest");
+        }
+    
+        StatusMessage status = (StatusMessage) response;
+        if (!status.getStatus()) {
+            throw new RuntimeException("No such user: " + status.getPayload());
+        }
+    
+        // Step 2: Parse recipient’s public key
+        String pubKeyBase64 = status.getPayload();
+        byte[] pubKeyBytes = Base64.getDecoder().decode(pubKeyBase64);
+        KeyFactory factory = KeyFactory.getInstance("ElGamal", "BC");
+        PublicKey pubKey = factory.generatePublic(new X509EncodedKeySpec(pubKeyBytes));
+    
+        System.out.println("[CLIENT] Parsed public key, proceeding to encrypt message...");
+    
+        // Step 3: Generate AES key + encrypt message
+        SecretKey aesKey = KeyGenerator.getInstance("AES").generateKey();
+        Cipher aes = Cipher.getInstance("AES/GCM/NoPadding");
         byte[] iv = new byte[12];
         new SecureRandom().nextBytes(iv);
-
-        Cipher aesCipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-        aesCipher.init(Cipher.ENCRYPT_MODE, aesKey, gcmSpec);
-        byte[] ciphertext = aesCipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
-
-        // Step 6: Encrypt the AES key using ElGamal (key wrapping)
-        Cipher elgamalCipher = Cipher.getInstance("ElGamal/None/PKCS1Padding", "BC");
-        elgamalCipher.init(Cipher.ENCRYPT_MODE, recipientPubKey);
-        byte[] wrappedKey = elgamalCipher.doFinal(aesKey.getEncoded());
-
-        // Step 7: Construct and send the PostMessage
-        PostMessage post = new PostMessage(
-            recvr,
-            Base64.getEncoder().encodeToString(ciphertext),
+        GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+        aes.init(Cipher.ENCRYPT_MODE, aesKey, spec);
+        byte[] cipherText = aes.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+    
+        // Step 4: Wrap AES key with recipient's public key
+        Cipher rsa = Cipher.getInstance("ElGamal/None/PKCS1Padding", "BC");
+        rsa.init(Cipher.ENCRYPT_MODE, pubKey);
+        byte[] wrappedKey = rsa.doFinal(aesKey.getEncoded());
+    
+        // Step 5: Build and send PostMessage
+        PostMessage msg = new PostMessage(receiver,
+            Base64.getEncoder().encodeToString(cipherText),
             Base64.getEncoder().encodeToString(wrappedKey),
-            Base64.getEncoder().encodeToString(iv)
-        );
-
-        channel.sendMessage(post);
-
-        // Step 8: Receive and display status response
-        StatusMessage response = (StatusMessage) channel.receiveMessage();
-        if (response.getStatus()) {
-            System.out.println("Success! " + response.getPayload());
-        } else {
-            System.out.println("Failed to post message: " + response.getPayload());
+            Base64.getEncoder().encodeToString(iv));
+    
+        System.out.println("[CLIENT] Sending encrypted PostMessage...");
+        channel.sendMessage(msg);
+    
+        System.out.println("[CLIENT] Waiting for post confirmation...");
+        Message confirm = channel.receiveMessage();
+    
+        if (confirm == null) {
+            System.out.println("[CLIENT] ERROR: No confirmation received (null).");
+            return;
         }
-
-        // Step 9: Close the channel
-        channel.closeChannel();
+    
+        if (confirm instanceof StatusMessage) {
+            StatusMessage m = (StatusMessage) confirm;
+            System.out.println("[CLIENT] Post status: " + m.getPayload());
+        } else {
+            System.out.println("[CLIENT] Unexpected message type: " + confirm.getClass().getSimpleName());
+        }
     }
 }

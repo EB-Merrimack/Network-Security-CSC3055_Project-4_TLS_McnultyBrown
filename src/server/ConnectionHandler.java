@@ -12,8 +12,10 @@ import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.GetMessage;
 import common.protocol.messages.GetResponseMessage;
 import common.protocol.messages.PostMessage;
+import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
+import common.protocol.user_auth.UserDatabase;
 import merrimackutil.util.NonceCache;
 import common.Board;
 import common.protocol.post.Post;
@@ -47,6 +49,8 @@ public class ConnectionHandler implements Runnable {
         this.channel.addMessageType(new AuthenticateMessage());
         this.channel.addMessageType(new GetMessage());
         this.channel.addMessageType(new GetResponseMessage());
+        this.channel.addMessageType(new PubKeyRequest());
+
         this.doDebug = doDebug;
 
         this.nonceCache = nonceCache;
@@ -70,80 +74,53 @@ public class ConnectionHandler implements Runnable {
       private void runCommunication() {
         try {
             board.loadFromFile();
-
-            System.out.println("[DEBUG] Waiting to receive a message...");
-            Message msg = channel.receiveMessage();
-            System.out.println("[DEBUG] Received message: " + msg);
-
     
-            if (msg.getType().equals("Create")) {
-                // Handle CreateMessage (unencrypted)
-                handleCreateMessage(msg);
-                return;
-            } else if (msg.getType().equals("authenticate")) {
-            boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
-
-            if (success) {
-                channel.sendMessage(new StatusMessage(true, "Authentication successful."));
-            } else {
-                channel.sendMessage(new StatusMessage(false, "Authentication failed. Check your password or OTP."));
-            }
-            return;
-        } else if (msg instanceof PostMessage) {
-            PostMessage postMsg = (PostMessage) msg;
-            String plaintext = postMsg.getDecryptedPayload(sessionKey);
-
-            if (plaintext == null) {
-                System.out.println("[SERVER] Decrypted payload is null.");
-                channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
-                return;
-            }
-
-            System.out.println("[SERVER] Received post payload: " + plaintext);
-
-            // Wrap it in a Post object
-            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
-
-            // Add post to board and save
-            board.addPost(post);
-            board.saveToFile();
-
-            // Confirm success
-            channel.sendMessage(new StatusMessage(true, "Success!"));
-            
-
-            } else if (msg instanceof GetMessage) {
-                GetMessage getMsg = (GetMessage) msg;
-                String username = getMsg.getUser();
-            
-                board.loadFromFile(); // ensure latest board
-            
-                // ✅ Step 1: Find all posts addressed to the requested user
-                List<Post> userPosts = new ArrayList<>();
-                for (Post post : board.getPosts()) {
-                    if (post.getUser().equals(username)) {
-                        userPosts.add(post);
+            while (true) {
+                System.out.println("[DEBUG] Waiting to receive a message...");
+                Message msg = channel.receiveMessage();
+                System.out.println("[DEBUG] Received message of type: " + msg.getType());
+    
+                if (msg.getType().equals("Create")) {
+                    handleCreateMessage(msg);
+                } else if (msg instanceof AuthenticateMessage) {
+                    boolean success = AuthenticationHandler.authenticate((AuthenticateMessage) msg);
+                    if (success) {
+                        channel.sendMessage(new StatusMessage(true, ""));
+                    } else {
+                        channel.sendMessage(new StatusMessage(false, "Authentication failed."));
+                        return; // 💥 Exit on failed auth only
                     }
+                } else if (msg instanceof PubKeyRequest) {
+                    PubKeyRequest req = (PubKeyRequest) msg;
+                    String targetUser = req.getUser();
+    
+                    System.out.println("[SERVER] PubKeyRequest for user: " + targetUser);
+    
+                    if (!UserDatabase.check(targetUser)) {
+                        System.out.println("[SERVER] PubKeyRequest failed: user not found.");
+                        channel.sendMessage(new StatusMessage(false, "Request Failed"));
+                    } else {
+                        String pubKey = UserDatabase.get(targetUser).getPubkey();
+                        System.out.println("[SERVER] Found pubkey for " + targetUser);
+                        channel.sendMessage(new StatusMessage(true, pubKey));
+                    }
+                } else if (msg instanceof PostMessage) {
+                    PostMessage postMsg = (PostMessage) msg;
+                    Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), postMsg.getMessage());
+    
+                    board.addPost(post);
+                    board.saveToFile();
+    
+                    channel.sendMessage(new StatusMessage(true, "Message posted."));
+                } else {
+                    System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
+                    channel.sendMessage(new StatusMessage(false, "Unknown Message."));
                 }
-            
-                // ✅ Step 2: Convert Post → PostMessage
-                List<PostMessage> converted = new ArrayList<>();
-                for (Post post : userPosts) {
-                    converted.add(post.toPostMessage()); // make sure to add this helper in Post.java
-                }
-            
-                // ✅ Step 3: Send response
-                GetResponseMessage response = new GetResponseMessage(converted);
-                channel.sendMessage(response);
-            
-        } else {
-            System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-
-    } catch (Exception ex) {
-        ex.printStackTrace();
     }
-}
 
             
        

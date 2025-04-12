@@ -4,6 +4,7 @@ import merrimackutil.json.types.JSONArray;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.JSONSerializable;
+import merrimackutil.json.JsonIO;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -49,24 +50,27 @@ public class Board implements JSONSerializable {
     }
 
     public void loadFromFile() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(BOARD_FILE))) {
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-    
-            // Read the file line by line and build the JSON string
-            while ((line = reader.readLine()) != null) {
-                jsonContent.append(line);
+        try {
+            File file = new File(BOARD_FILE);
+            if (!file.exists()) {
+                System.out.println("[Board] board.json not found. Initializing empty board.");
+                posts = new ArrayList<>();
+                saveToFile();  // write empty structure with "posts": []
+                return;
             }
-    
-            // Convert the JSON content into a JSONObject
-            JSONObject jsonObj = new JSONObject();
-            jsonObj.put("boardData", jsonContent.toString());
-    
-            // Deserialize the board data
-            deserialize(jsonObj);
-    
-        } catch (IOException  e) {
-            e.printStackTrace();
+
+            JSONType raw = JsonIO.readObject(file);
+            if (!(raw instanceof JSONObject)) {
+                throw new InvalidObjectException("board.json is not a valid JSON object.");
+            }
+
+            JSONObject boardData = (JSONObject) raw;
+            deserialize(boardData);
+
+            System.out.println("[Board] Loaded " + posts.size() + " post(s).");
+        } catch (IOException e) {
+            System.err.println("[Board] Error loading board.json: " + e.getMessage());
+            posts = new ArrayList<>(); // fallback to empty board
         }
     }
     
