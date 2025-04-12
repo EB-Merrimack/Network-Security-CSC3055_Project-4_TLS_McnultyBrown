@@ -75,11 +75,14 @@ public class UserDatabase {
 
     private static void saveUsers(String userfile) {
         try {
+            // 🔁 Load existing users into the map first to avoid overwriting
+            loadUsers(userfile);
+    
             JSONArray entries = new JSONArray();
             for (User user : userMap.values()) {
                 entries.add(user.toJSONType());
             }
-
+    
             UserDBWrapper db = new UserDBWrapper(entries);
             JsonIO.writeFormattedObject(db, new File(userfile));
             System.out.println("[UserDatabase] Saved users to file.");
@@ -87,6 +90,7 @@ public class UserDatabase {
             System.err.println("[UserDatabase] Failed to save users: " + e.getMessage());
         }
     }
+    
 
     // Method to load users from a custom userfile
     public static void load(String userfile) {

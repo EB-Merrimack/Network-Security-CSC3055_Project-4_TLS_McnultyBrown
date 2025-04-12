@@ -5,6 +5,8 @@ import common.protocol.ProtocolChannel;
 import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
+import common.protocol.user_auth.User;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -87,11 +89,12 @@ public class PostClient {
 
         // Step 7: Construct and send the PostMessage
         PostMessage post = new PostMessage(
-            recvr,
+            User.getUser(), //who the message is from
             Base64.getEncoder().encodeToString(ciphertext), //where the message is 
             Base64.getEncoder().encodeToString(wrappedKey),
             Base64.getEncoder().encodeToString(iv)
         );
+
         System.out.println("[Debug Post Client] Sending PostMessage..."+post);
 
         channel.sendMessage((PostMessage) post);

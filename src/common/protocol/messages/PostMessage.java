@@ -14,22 +14,22 @@ import javax.crypto.spec.SecretKeySpec;
  * Represents a message posted to the bulletin board.
  */
 public class PostMessage implements Message {
-    private String recvr;        // recipient username
+    private String User;        // recipient username
     private String ciphertext;   // base64 AES ciphertext
     private String wrappedKey;   // base64 ElGamal-wrapped AES key
     private String iv;           // base64 AES IV
 
     public PostMessage() {}
 
-    public PostMessage(String recvr, String ciphertext, String wrappedKey, String iv) {
-        this.recvr = recvr;
+    public PostMessage(String user, String ciphertext, String wrappedKey, String iv) {
+        this.User = user;
         this.ciphertext = ciphertext;
         this.wrappedKey = wrappedKey;
         this.iv = iv;
     }
 
-    public String getRecvr() {
-        return recvr;
+    public String getUser() {
+        return User;
     }
 
     public String getCiphertext() {
@@ -71,7 +71,7 @@ public class PostMessage implements Message {
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
         obj.put("type", "post");
-        obj.put("recvr", recvr);
+        obj.put("User", User);
         obj.put("ciphertext", ciphertext);
         obj.put("wrappedKey", wrappedKey);
         obj.put("iv", iv);
@@ -85,7 +85,7 @@ public class PostMessage implements Message {
         }
 
         JSONObject json = (JSONObject) obj;
-        this.recvr = json.getString("recvr");
+        this.User = json.getString("User");
         this.ciphertext = json.getString("ciphertext");
         this.wrappedKey = json.getString("wrappedKey");
         this.iv = json.getString("iv");
@@ -103,6 +103,11 @@ public class PostMessage implements Message {
 
     @Override
     public String toString() {
-        return "[PostMessage] to=" + recvr;
+        return "PostMessage{" +
+            "User='" + User + '\'' +
+            ", ciphertext='" + ciphertext + '\'' +
+            ", wrappedKey='" + wrappedKey + '\'' +
+            ", iv='" + iv + '\'' +
+            '}';
     }
 }
