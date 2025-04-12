@@ -1,6 +1,7 @@
 package common;
 
 import merrimackutil.json.*;
+import merrimackutil.json.parser.JSONParser;
 import merrimackutil.json.types.*;
 import server.Configuration;
 import java.io.*;
@@ -52,28 +53,39 @@ public class Board implements JSONSerializable {
 
     public void loadFromFile() {
         System.out.println("[DEBUG] Loading board data from file: " + BOARD_FILE);
-        try (BufferedReader reader = new BufferedReader(new FileReader(BOARD_FILE))) {
-            StringBuilder jsonContent = new StringBuilder();
-            String line;
-
-            // Read the file line by line and build the JSON string
-            while ((line = reader.readLine()) != null) {
-                jsonContent.append(line);
+        try {
+            JSONObject boardObj = JsonIO.readObject(new File(BOARD_FILE));
+            System.out.println("[DEBUG] Board JSON loaded: " + boardObj);
+    
+            if (!boardObj.containsKey("posts")) {
+                System.err.println("[ERROR] 'posts' key not found in board JSON.");
+                return;
             }
-
-            // Convert the JSON content into a JSONObject
-            JSONObject jsonObj = new JSONObject();
-            jsonObj.put("boardData", jsonContent.toString());
-            System.out.println("[DEBUG] Board data loaded from file. Deserializing...");
-
-            // Deserialize the board data
-            deserialize(jsonObj);
-
-        } catch (IOException e) {
+    
+            JSONArray postArray = boardObj.getArray("posts");
+    
+            if (postArray == null) {
+                System.err.println("[ERROR] 'posts' key exists but is not an array.");
+                return;
+            }
+    
+            posts.clear();
+            for (int i = 0; i < postArray.size(); i++) {
+                JSONObject postObj = postArray.getObject(i);
+                posts.add(new Post(postObj));
+                System.out.println("[DEBUG] Deserialized post: " + postObj);
+            }
+    
+            System.out.println("[DEBUG] Successfully loaded " + posts.size() + " posts.");
+    
+        } catch (IOException  e) {
             System.err.println("[ERROR] Failed to load board data: " + e.getMessage());
             e.printStackTrace();
         }
     }
+    
+    
+    
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
@@ -97,7 +109,26 @@ public class Board implements JSONSerializable {
             System.out.println("[DEBUG] Deserialized post: " + post);
         }
     }
+/**
+ * Loads existing posts from file, adds a new post, and saves the updated list.
+ */
+public void loadAndAddPost(Post newPost) {
+    System.out.println("[DEBUG] Loading board, adding post, and saving...");
 
+    // Step 1: Load from file if it exists
+    File boardFile = new File(BOARD_FILE);
+    if (boardFile.exists()) {
+        loadFromFile();  // This will populate 'posts'
+    } else {
+        System.out.println("[DEBUG] Board file does not exist. Starting with empty post list.");
+    }
+
+    // Step 2: Add the new post
+    addPost(newPost);
+
+    // Step 3: Save updated board to file
+    saveToFile();
+}
     public void saveToFile() {
         System.out.println("[DEBUG] Saving board data to file: " + BOARD_FILE);
         try {
@@ -125,7 +156,7 @@ public class Board implements JSONSerializable {
         @Override
         public JSONType toJSONType() {
             JSONObject root = new JSONObject();
-            root.put("entries", entries);
+            root.put("posts", entries);
             return root;
         }
 

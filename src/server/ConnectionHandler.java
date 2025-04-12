@@ -201,7 +201,7 @@ public class ConnectionHandler implements Runnable {
             Post post = new Post( User, Message, WrappedKey, IV,Type);
             // Add post to board and save
             board.addPost(post);
-            board.saveToFile();
+            board.loadAndAddPost(post);
     
             channel.sendMessage(new StatusMessage(true, "Success!"));
     
