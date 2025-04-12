@@ -111,7 +111,7 @@ public class ConnectionHandler implements Runnable {
         
             channel.sendMessage((Message) new StatusMessage(true, base64Key));
             System.out.println("[SERVER] Public key sent.");
-            return;
+            
         } else if (msg.getType().equals("post")) {
             // Handle PostMessage
             System.out.println("[SERVER] Handling PostMessage");
