@@ -204,6 +204,8 @@ public class ConnectionHandler implements Runnable {
             board.loadAndAddPost(post);
     
             channel.sendMessage(new StatusMessage(true, "Success!"));
+            System.out.println("[SERVER] Post successful.");
+            return;
     
         } catch (Exception e) {
             e.printStackTrace();
