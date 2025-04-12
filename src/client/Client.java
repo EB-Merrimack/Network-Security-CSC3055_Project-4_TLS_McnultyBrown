@@ -141,7 +141,7 @@ public class Client {
             socket.startHandshake();
         
             PostClient postClient = new PostClient(socket);
-            postClient.sendMessage(recvr, message);
+            postClient.sendMessage(user,recvr, message);
         } else if (get) {
             if (user == null || host == null || port == 0 || privKey == null) {
                 System.err.println("Error: Missing required arguments for --get.");

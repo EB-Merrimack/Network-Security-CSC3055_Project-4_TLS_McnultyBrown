@@ -15,14 +15,15 @@ import javax.crypto.spec.SecretKeySpec;
  * Represents a message posted to the bulletin board.
  */
 public class PostMessage implements Message {
-    private String user;        // recipient username
-    private String message;     // base64 AES ciphertext
-    private String wrappedkey;  // base64 ElGamal-wrapped AES key
-    private String iv;          // base64 AES IV
-    private String type;        // message type
+    private String user;
+    private String message;
+    private String wrappedkey;
+    private String iv;
+    private String type;
 
     public PostMessage() {
         this.type = "post";
+        System.out.println("[DEBUG] PostMessage default constructor called.");
     }
 
     public PostMessage(String user, String message, String wrappedkey, String iv) {
@@ -31,6 +32,7 @@ public class PostMessage implements Message {
         this.message = message;
         this.wrappedkey = wrappedkey;
         this.iv = iv;
+        System.out.println("[DEBUG] PostMessage constructed: user=" + user + ", iv=" + iv);
     }
 
     public String getUser() {
@@ -61,6 +63,10 @@ public class PostMessage implements Message {
             byte[] ivBytes = Base64.getDecoder().decode(getIv());
             byte[] cipherBytes = Base64.getDecoder().decode(getMessage());
 
+            System.out.println("[DEBUG] Decrypting payload...");
+            System.out.println("[DEBUG] IV (Base64): " + getIv());
+            System.out.println("[DEBUG] Ciphertext (Base64): " + getMessage());
+
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
             SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
@@ -68,14 +74,19 @@ public class PostMessage implements Message {
             cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
             byte[] plainBytes = cipher.doFinal(cipherBytes);
 
-            return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+            String decrypted = new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+            System.out.println("[DEBUG] Decrypted payload: " + decrypted);
+
+            return decrypted;
         } catch (Exception e) {
+            System.err.println("[ERROR] Failed to decrypt payload: " + e.getMessage());
             throw new RuntimeException("Failed to decrypt payload", e);
         }
     }
 
     @Override
     public JSONType toJSONType() {
+        System.out.println("[DEBUG] Serializing PostMessage to JSON...");
         JSONObject obj = new JSONObject();
         obj.put("type", type);
         obj.put("user", user);
@@ -87,32 +98,31 @@ public class PostMessage implements Message {
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
+        System.out.println("[DEBUG] Deserializing JSON to PostMessage...");
         if (!(obj instanceof JSONObject)) {
             throw new InvalidObjectException("Expected JSONObject.");
         }
 
         JSONObject json = (JSONObject) obj;
-        this.type = json.getString("type");  // Optional, but included
+        this.type = json.getString("type");
         this.user = json.getString("user");
         this.message = json.getString("message");
         this.wrappedkey = json.getString("wrappedkey");
         this.iv = json.getString("iv");
+
+        System.out.println("[DEBUG] Deserialized PostMessage: user=" + user + ", iv=" + iv);
     }
 
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
+        System.out.println("[DEBUG] Decoding JSONObject to PostMessage...");
         PostMessage decoded = new PostMessage(
             obj.getString("user"),
             obj.getString("message"),
             obj.getString("wrappedkey"),
             obj.getString("iv")
         );
-        decoded.type = obj.getString("type"); // Preserve type field explicitly
+        decoded.type = obj.getString("type");
         return decoded;
-    }
-
-    @Override
-    public String toString() {
-        return "[PostMessage] to=" + user;
     }
 }

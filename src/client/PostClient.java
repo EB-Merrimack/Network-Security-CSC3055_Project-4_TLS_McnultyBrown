@@ -28,7 +28,7 @@ public class PostClient {
         channel.addMessageType(new StatusMessage());
     }
 
-    public void sendMessage(String recvr, String plaintext) throws Exception {
+    public void sendMessage(String user, String recvr, String plaintext) throws Exception {
         System.out.println("[Debug Post Client] Starting sendMessage to " + recvr + " with plaintext: " + plaintext);
 
         // Step 1: Request recipient's public key
@@ -76,7 +76,7 @@ public class PostClient {
 
         // Step 7: Construct and send the PostMessage
         PostMessage post = new PostMessage(
-            recvr,
+            user,
             Base64.getEncoder().encodeToString(ciphertext),
             Base64.getEncoder().encodeToString(wrappedKey),
             Base64.getEncoder().encodeToString(iv)
