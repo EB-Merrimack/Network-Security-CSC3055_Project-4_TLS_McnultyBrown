@@ -36,6 +36,14 @@ public class Post implements JSONSerializable {
         return user; 
     }
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Retrieves the message content of the post.
+ * 
+ * @return the encrypted message as a String.
+ */
+
+/*******  f2e95d33-63a9-4e6a-b47f-019d0d0c5a5d  *******/
     public String getMessage() { 
         return message; 
     }
