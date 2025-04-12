@@ -84,7 +84,7 @@ public class ConnectionHandler implements Runnable {
 
     
             if (msg.getType().equals("Create")) {
-                // Handle CreateMessage (unencrypted)
+                // Handle CreateMessage 
                 handleCreateMessage(msg);
                 return;
             } else if (msg.getType().equals("authenticate")) {
@@ -111,30 +111,9 @@ public class ConnectionHandler implements Runnable {
         } else if (msg.getType().equals("post")) {
             // Handle PostMessage
             System.out.println("[SERVER] Handling PostMessage");
-            PostMessage postMsg = (PostMessage) msg;
-            String plaintext = postMsg.getDecryptedPayload(sessionKey);
+           handlePostMessage((PostMessage) msg);} 
 
-            if (plaintext == null) {
-                System.out.println("[SERVER] Decrypted payload is null.");
-                channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
-                return;
-            } 
-            
-
-            System.out.println("[SERVER] Received post payload: " + plaintext);
-
-            // Wrap it in a Post object
-            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
-
-            // Add post to board and save
-            board.addPost(post);
-            board.saveToFile();
-
-            // Confirm success
-            channel.sendMessage(new StatusMessage(true, "Success!"));
-            
-
-            } else if (msg instanceof GetMessage) {
+          else if (msg instanceof GetMessage) {
                 GetMessage getMsg = (GetMessage) msg;
                 String username = getMsg.getUser();
             
@@ -196,5 +175,35 @@ public class ConnectionHandler implements Runnable {
             e.printStackTrace();
         }
     }
+    private void handlePostMessage(PostMessage postMsg) {
+        try {
+            System.out.println("[SERVER] Handling PostMessage");
+    
+            // Decrypt the payload
+            String plaintext = postMsg.getDecryptedPayload(sessionKey);
+    
+            if (plaintext == null) {
+                System.out.println("[SERVER] Decrypted payload is null.");
+                channel.sendMessage(new StatusMessage(false, "Post failed: decryption error."));
+                return;
+            }
+    
+            System.out.println("[SERVER] Received post payload: " + plaintext);
+    
+            // Wrap in Post object
+            Post post = new Post(postMsg.getUser(), postMsg.getWrappedKey(), postMsg.getIv(), plaintext);
+    
+            // Add post to board and save
+            board.addPost(post);
+            board.saveToFile();
+    
+            channel.sendMessage(new StatusMessage(true, "Success!"));
+    
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+                channel.sendMessage(new StatusMessage(false, "Post failed due to server error."));
+    }
+    
     
 }
