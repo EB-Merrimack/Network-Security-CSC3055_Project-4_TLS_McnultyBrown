@@ -3,6 +3,7 @@ package common.protocol.messages;
 import common.protocol.Message;
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.types.JSONType;
+
 import java.io.InvalidObjectException;
 import java.util.Base64;
 
@@ -18,10 +19,14 @@ public class PostMessage implements Message {
     private String message;     // base64 AES ciphertext
     private String wrappedkey;  // base64 ElGamal-wrapped AES key
     private String iv;          // base64 AES IV
+    private String type;        // message type
 
-    public PostMessage() {}
+    public PostMessage() {
+        this.type = "post";
+    }
 
     public PostMessage(String user, String message, String wrappedkey, String iv) {
+        this.type = "post";
         this.user = user;
         this.message = message;
         this.wrappedkey = wrappedkey;
@@ -43,34 +48,36 @@ public class PostMessage implements Message {
     public String getIv() {
         return iv;
     }
-    
-    public String getDecryptedPayload(byte[] sessionKey) {
-    try {
-        byte[] ivBytes = Base64.getDecoder().decode(getIv());
-        byte[] cipherBytes = Base64.getDecoder().decode(getMessage());
 
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-        GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
-        SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
-
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
-        byte[] plainBytes = cipher.doFinal(cipherBytes);
-
-        return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
-    } catch (Exception e) {
-        throw new RuntimeException("Failed to decrypt payload", e);
-    }
-}
-
-    @Override
     public String getType() {
-        return "post";
+        return type;
+    }
+
+    /**
+     * Decrypt the AES-encrypted payload using the session key.
+     */
+    public String getDecryptedPayload(byte[] sessionKey) {
+        try {
+            byte[] ivBytes = Base64.getDecoder().decode(getIv());
+            byte[] cipherBytes = Base64.getDecoder().decode(getMessage());
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
+            SecretKeySpec keySpec = new SecretKeySpec(sessionKey, "AES");
+
+            cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmSpec);
+            byte[] plainBytes = cipher.doFinal(cipherBytes);
+
+            return new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt payload", e);
+        }
     }
 
     @Override
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
-        obj.put("type", "post");
+        obj.put("type", type);
         obj.put("user", user);
         obj.put("message", message);
         obj.put("wrappedkey", wrappedkey);
@@ -85,6 +92,7 @@ public class PostMessage implements Message {
         }
 
         JSONObject json = (JSONObject) obj;
+        this.type = json.getString("type");  // Optional, but included
         this.user = json.getString("user");
         this.message = json.getString("message");
         this.wrappedkey = json.getString("wrappedkey");
@@ -93,12 +101,14 @@ public class PostMessage implements Message {
 
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
-        return new PostMessage(
+        PostMessage decoded = new PostMessage(
             obj.getString("user"),
             obj.getString("message"),
             obj.getString("wrappedkey"),
             obj.getString("iv")
         );
+        decoded.type = obj.getString("type"); // Preserve type field explicitly
+        return decoded;
     }
 
     @Override
