@@ -34,6 +34,13 @@
          "wrappedkey" : "g2NOrFJW5AtQKD7HEq0L6VM4LSPmW2/BwE2W9+rpHUH72PbAURxGyZc7JWQQwBHyNqIEjkSxyDij8Z4UhiM01yjDXlo0vEYrMinqHXr9xD3qcDX7RtPv3KJIVSIOEKKEGMrGn7BLz9KUVvTbaKY9+ABwGFBNCwE1F3CoigSBScI=",
          "user" : "eb!",
          "iv" : "5E9OHu5A6MXTMlVq"
+      },
+      {
+         "type" : "Post",
+         "message" : "LqWSdv+LllQ6x3+X5cSkUyKEvQg=",
+         "wrappedkey" : "zepfPSFrdys4rX953O1QMLwzGPUHW8YhmO7CRhUIv8kiHGllGK3JZBpHaA2V8yC4wTb6tCqEPF3Epq5N+HqEyXhsy/dQOQTJOG4vnS3Ewyrmb43neCfK2j9Y475QT2j9IC7CvdrM3oFGrWfImiAcbTBipw7uaYHD3DqFZL4T9bU=",
+         "user" : "eb!",
+         "iv" : "zH9JbCcSgZvaE/Wo"
       }
    ]
 }

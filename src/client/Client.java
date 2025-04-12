@@ -222,12 +222,7 @@ try {
 }
     }
     private static void handleGet() throws Exception {
-    // Prompt password + OTP, reuse authenticateUser()
-    if (!authenticateUser()) {
-        System.out.println("Authentication failed.");
-        return;
-    }
-
+  
     // Load private key from Base64 string
     byte[] privKeyBytes = java.util.Base64.getDecoder().decode(privKey);
     KeyFactory keyFactory = KeyFactory.getInstance("ElGamal", "BC");
@@ -300,8 +295,7 @@ try {
             String password = new String(System.console().readPassword());
         
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ElGamal");
-            keyGen.initialize(512); //FOR TESTING
-            //keyGen.initialize(2048);
+            keyGen.initialize(2048);
             KeyPair kp = keyGen.generateKeyPair();
         
             String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
