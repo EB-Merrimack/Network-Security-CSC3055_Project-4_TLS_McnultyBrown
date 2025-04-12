@@ -77,22 +77,20 @@ public class ConnectionHandler implements Runnable {
       private void runCommunication() {
         try {
             board.loadFromFile();
-                while (true) {
-                    System.out.println("[DEBUG] Waiting to receive a message...");
-                    Message msg = null;
-        
-                    try {
-                        msg = channel.receiveMessage();
-                    } catch (NullPointerException e) {
-                        System.err.println("[ERROR] NullPointerException encountered while receiving message.");
-                        System.err.println("[DEBUG] Received message: " + msg);
-                        throw e; // Re-throw the exception if necessary
-                    }
-        
-                    if (msg == null) {
-                        System.out.println("[DEBUG] No more messages (client disconnected).");
-                        break;
-                    }
+            while (true) {
+                System.out.println("[DEBUG] Waiting to receive a message...");
+                Message msg = null;
+    
+                try {
+                    // Try to receive the message
+                    msg = channel.receiveMessage();
+                } catch (NullPointerException e) {
+                    // If a NullPointerException occurs, log it and continue waiting for the next message
+                    System.err.println("[ERROR] NullPointerException encountered while receiving message.");
+                    System.err.println("[DEBUG] Received message: " + msg);
+                    // You can decide whether to break out of the loop or continue waiting
+                    continue; // Continue waiting for the next message
+                }
                 System.out.println("[DEBUG] Received message: " + msg);
             if (msg.getType().equals("Create")) {
                 // Handle CreateMessage 
