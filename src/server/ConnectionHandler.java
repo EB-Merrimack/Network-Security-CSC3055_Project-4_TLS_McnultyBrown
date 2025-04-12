@@ -77,14 +77,22 @@ public class ConnectionHandler implements Runnable {
       private void runCommunication() {
         try {
             board.loadFromFile();
-    
-            while (true) {
-                System.out.println("[DEBUG] Waiting to receive a message...");
-                Message msg = channel.receiveMessage();
-                if (msg == null) {
-                    System.out.println("[DEBUG] No more messages (client disconnected).");
-                    break;
-                }
+                while (true) {
+                    System.out.println("[DEBUG] Waiting to receive a message...");
+                    Message msg = null;
+        
+                    try {
+                        msg = channel.receiveMessage();
+                    } catch (NullPointerException e) {
+                        System.err.println("[ERROR] NullPointerException encountered while receiving message.");
+                        System.err.println("[DEBUG] Received message: " + msg);
+                        throw e; // Re-throw the exception if necessary
+                    }
+        
+                    if (msg == null) {
+                        System.out.println("[DEBUG] No more messages (client disconnected).");
+                        break;
+                    }
                 System.out.println("[DEBUG] Received message: " + msg);
             if (msg.getType().equals("Create")) {
                 // Handle CreateMessage 
@@ -111,7 +119,7 @@ public class ConnectionHandler implements Runnable {
         
             channel.sendMessage((Message) new StatusMessage(true, base64Key));
             System.out.println("[SERVER] Public key sent.");
-            
+
         } else if (msg.getType().equals("post")) {
             // Handle PostMessage
             System.out.println("[SERVER] Handling PostMessage");

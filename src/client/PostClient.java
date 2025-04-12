@@ -85,7 +85,7 @@ public class PostClient {
         );
         System.out.println("[Debug Post Client] Sending PostMessage..."+post);
 
-        channel.sendMessage((PostMessage) post);
+        channel.sendMessage(post);
         System.out.println("[Debug Post Client] Sent PostMessage.");
 
         // Step 8: Receive and display status response
