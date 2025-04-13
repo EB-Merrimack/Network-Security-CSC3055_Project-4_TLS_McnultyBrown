@@ -1,16 +1,11 @@
 package common.protocol.user_creation;
 
-import merrimackutil.codec.Base32;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.UserDatabase;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 import org.bouncycastle.crypto.generators.SCrypt;
 
 import java.security.SecureRandom;
-import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Base64;
@@ -19,13 +14,19 @@ import java.util.Base64;
 public class CreateAccount {
 
     // Simulated database (in a real-world scenario, this could be a database connection)
+    @SuppressWarnings("unused")
     private static Map<String, User> userDatabase = new HashMap<>();
     
     public static class User {
+        @SuppressWarnings("unused")
         private String username;
+        @SuppressWarnings("unused")
         private String passwordHash; // Store password securely using hash
+        @SuppressWarnings("unused")
         private String publicKey;
+        @SuppressWarnings("unused")
         private String totpKey; // Base32 encoded TOTP key
+        @SuppressWarnings("unused")
         private String privateKey; // The private key generated for the user
         
         // Constructor

@@ -46,9 +46,6 @@ public class AuthenticateMessage implements Message {
         this.user = json.getString("user");
         this.pass = json.getString("pass");
         this.otp = json.getString("otp");
-
-        // Debugging output
-        System.out.println("[DEBUG] Deserialize AuthenticateMessage: user=" + user + ", pass=" + pass + ", otp=" + otp);
     }
 
     @Override
@@ -59,16 +56,11 @@ public class AuthenticateMessage implements Message {
         obj.put("pass", pass);
         obj.put("otp", otp);
 
-        // Debugging output
-        System.out.println("[DEBUG] Serialize AuthenticateMessage: " + obj);
-
         return obj;
     }
 
     @Override
     public String getType() {
-        // Debugging output for getType
-        System.out.println("[DEBUG] getType() called, returning 'authenticate'");
         return "authenticate";
     }
 
@@ -77,9 +69,6 @@ public class AuthenticateMessage implements Message {
         String user = obj.getString("user");
         String pass = obj.getString("pass");
         String otp = obj.getString("otp");
-
-        // Debugging output
-        System.out.println("[DEBUG] Decoding AuthenticateMessage: user=" + user + ", pass=" + pass + ", otp=" + otp);
 
         return new AuthenticateMessage(user, pass, otp);
     }
