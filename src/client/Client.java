@@ -1,8 +1,6 @@
 package client;
 
-import java.io.BufferedReader;
 import java.io.Console;
-import java.io.InputStreamReader;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -17,8 +15,6 @@ import org.bouncycastle.util.Objects;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.security.Security;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-
 import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 
@@ -67,8 +63,7 @@ public class Client {
     }
 
     public static void processArgs(String[] args) throws Exception {
-       System.out.println("args: " + args.length);
-       System.out.println("args: " + args);
+     
         if (args.length == 0) {
             usage();
         }
@@ -174,37 +169,37 @@ public class Client {
 
     // Show OTP input (normal)
     String otp = console.readLine("Enter OTP: ");
-      System.out.println("[DEBUG] Authenticating user: " + user + " with password: " + password + " and OTP: " + otp);
+      
 // Start TLS
 try {
-    System.out.println("[DEBUG] Starting TLS connection to " + host + ":" + port);
+   
 
     SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
     SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-    System.out.println("[DEBUG] TLS handshake started...");
+  
     socket.startHandshake();
-    System.out.println("[DEBUG] TLS handshake completed.");
+   
 
     // Create protocol channel
     channel = new ProtocolChannel(socket);
-    System.out.println("[DEBUG] ProtocolChannel created and connected.");
+    
 
     // Register message types
     channel.addMessageType(new StatusMessage());
     channel.addMessageType(new AuthenticateMessage());
-    System.out.println("[DEBUG] Message types added to the channel.");
+  
 
     // Prepare and send AuthenticateMessage
     AuthenticateMessage authMsg = new AuthenticateMessage(user, password, otp);
-    System.out.println("[DEBUG] Sending AuthenticateMessage: " + authMsg.toJSONType()); // Debug output for the message
+    
 
     // Send authentication message
     channel.sendMessage(authMsg);
-    System.out.println("[DEBUG] AuthenticateMessage sent.");
+  
 
     // Receive response
     Message response = channel.receiveMessage();
-    System.out.println("[DEBUG] Response received: " + response);
+  
 
     // Check the response type
     if (!(response instanceof StatusMessage)) {
@@ -214,7 +209,7 @@ try {
 
     // Process status message
     StatusMessage status = (StatusMessage) response;
-    System.out.println("[DEBUG] Status message received: " + status.getPayload());
+    
     return status.getStatus(); // true = success
 } catch (Exception e) {
     e.printStackTrace();
@@ -304,25 +299,17 @@ try {
             String pubKeyEncoded = Base64.getEncoder().encodeToString(kp.getPublic().getEncoded());
             String privKeyEncoded = Base64.getEncoder().encodeToString(kp.getPrivate().getEncoded());
         
-            System.out.println("Public key: " + pubKeyEncoded);
-            System.out.println("Private key: " + privKeyEncoded); // Prompt user to save
-            System.out.println("Key algorithm: " + kp.getPublic().getAlgorithm());
-            System.out.println("Key format: " + kp.getPublic().getFormat());
-            System.out.println("📦 Base64 pubkey: " + Base64.getEncoder().encodeToString(kp.getPublic().getEncoded()));
-
         
             SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
             SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
             
             socket.startHandshake(); // 👈 force the TLS handshake now
-            System.out.println("[CLIENT] TLS handshake completed.");
 
 
             channel = new ProtocolChannel(socket);
             channel.addMessageType(new StatusMessage());
         
             CreateMessage msg = new CreateMessage(user, password, pubKeyEncoded);
-            System.out.println("Sending create message: " + msg);//more debug for message
             channel.sendMessage((Message) msg);
     
             
