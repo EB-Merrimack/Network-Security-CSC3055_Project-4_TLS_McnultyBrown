@@ -4,6 +4,7 @@ package server;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import common.protocol.Message;
@@ -15,6 +16,7 @@ import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
+import common.protocol.user_auth.User;
 import common.protocol.user_auth.UserDatabase;
 import merrimackutil.util.NonceCache;
 import common.Board;
@@ -24,15 +26,10 @@ import common.protocol.post.Post;
 public class ConnectionHandler implements Runnable {
 
     private ProtocolChannel channel;
-    @SuppressWarnings("unused")
     private NonceCache nonceCache;
-    @SuppressWarnings("unused")
     private boolean doDebug = false;
-    @SuppressWarnings("unused")
     private String serviceName;
-    @SuppressWarnings("unused")
     private String secret;
-    @SuppressWarnings("unused")
     private byte[] sessionKey;
     private static Board board = new Board();
 
@@ -81,14 +78,20 @@ public class ConnectionHandler implements Runnable {
         try {
             board.loadFromFile();
             while (true) {
+                System.out.println("[DEBUG] Waiting to receive a message...");
                 Message msg = null;
     
                 try {
                     // Try to receive the message
                     msg = channel.receiveMessage();
                 } catch (NullPointerException e) {
+                    // If a NullPointerException occurs, log it and continue waiting for the next message
+                    System.err.println("[ERROR] NullPointerException encountered while receiving message.");
+                    System.err.println("[DEBUG] Received message: " + msg);
+                    // You can decide whether to break out of the loop or continue waiting
                     continue; // Continue waiting for the next message
                 }
+                System.out.println("[DEBUG] Received message: " + msg);
             if (msg.getType().equals("Create")) {
                 // Handle CreateMessage 
                 handleCreateMessage(msg);
@@ -103,16 +106,21 @@ public class ConnectionHandler implements Runnable {
             }
             return;
         } else if (msg.getType().equals("PubKeyRequest")) {
+            System.out.println("[SERVER] Received PubKeyRequest.");
         
             PubKeyRequest pubKeyRequest = (PubKeyRequest) msg;
             String username = pubKeyRequest.getUser();  // Use getUser() here
+            System.out.println("[SERVER] Public key requested for user: " + username);
         
             String base64Key = UserDatabase.getEncodedPublicKey(username) ;  // You might want to change this to take a username
+            System.out.println("[SERVER] Sending public key (Base64): " + base64Key);
         
             channel.sendMessage((Message) new StatusMessage(true, base64Key));
+            System.out.println("[SERVER] Public key sent.");
 
         } else if (msg.getType().equals("post")) {
             // Handle PostMessage
+            System.out.println("[SERVER] Handling PostMessage");
            handlePostMessage((PostMessage) msg);
            return;
         }
@@ -122,7 +130,7 @@ public class ConnectionHandler implements Runnable {
             
                 board.loadFromFile(); // ensure latest board
             
-                // Step 1: Find all posts addressed to the requested user
+                // ✅ Step 1: Find all posts addressed to the requested user
                 List<Post> userPosts = new ArrayList<>();
                 for (Post post : board.getPosts()) {
                     if (post.getUser().equals(username)) {
@@ -130,17 +138,18 @@ public class ConnectionHandler implements Runnable {
                     }
                 }
             
-                // Step 2: Convert Post → PostMessage
+                // ✅ Step 2: Convert Post → PostMessage
                 List<PostMessage> converted = new ArrayList<>();
                 for (Post post : userPosts) {
                     converted.add(post.toPostMessage()); // make sure to add this helper in Post.java
                 }
             
-                // Step 3: Send response
+                // ✅ Step 3: Send response
                 GetResponseMessage response = new GetResponseMessage(converted);
                 channel.sendMessage(response);
             
         } else {
+            System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
         }
 
     }
@@ -154,6 +163,7 @@ public class ConnectionHandler implements Runnable {
 
     private void handleCreateMessage(Message msg) {
         try {
+            System.out.println("[SERVER] Handling CreateMessage");
     
             // Safe cast
             common.protocol.user_creation.CreateMessage createMsg = 
@@ -164,6 +174,7 @@ public class ConnectionHandler implements Runnable {
             String publicKey = createMsg.getPublicKey();
             String userfile = Configuration.getUsersFile();
     
+            System.out.println("[SERVER] Creating account for: " + username);
     
             // Call account creation logic
             common.protocol.messages.StatusMessage response =
@@ -178,6 +189,7 @@ public class ConnectionHandler implements Runnable {
     }
     private void handlePostMessage(PostMessage postMsg) {
         try {
+            System.out.println("[SERVER] Handling PostMessage");
     
             // reformat PostMessage to Post
             String Type=postMsg.getType();
@@ -192,6 +204,7 @@ public class ConnectionHandler implements Runnable {
             board.loadAndAddPost(post);
     
             channel.sendMessage(new StatusMessage(true, "Success!"));
+            System.out.println("[SERVER] Post successful.");
             return;
     
         } catch (Exception e) {

@@ -134,6 +134,8 @@ public class BulletinBoardService
         System.setProperty("javax.net.ssl.keyStore", config.getKeystoreFile());
         System.setProperty("javax.net.ssl.keyStorePassword", config.getKeystorePass());
 
+        System.out.println("[DEBUG] Keystore file: " + config.getKeystoreFile());
+        System.out.println("[DEBUG] File exists? " + new File(config.getKeystoreFile()).exists());
 
         SSLServerSocketFactory sslFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
         SSLServerSocket server = (SSLServerSocket) sslFactory.createServerSocket(config.getPort());        System.out.println("Bulletin Board Server started on port " + config.getPort());
