@@ -118,12 +118,10 @@ public class Client {
             System.out.println("Creating account for user: " + user);
             // Create logic runs in main()
         } else if (post) {
-            System.out.println("post called");
             if (user == null || host == null || port == 0 || recvr == null || message == null) {
                 System.err.println("Error: Missing required arguments for --post.");
                 usage();
             }
-            System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
             if (!authenticateUser()) {
                 System.out.println("Authentication failed.");
                 return;

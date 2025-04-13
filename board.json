@@ -90,6 +90,13 @@
          "wrappedkey" : "Gl8sw7F6hVbBUq/5TaNxvYlDkr/c9obYcp7l6og/E0V5Ufe5OnryIVQci1m5LWPzRZDwtjtMb25f+SsA3DJrmqJhU5itpHr2OiseRHE65HHvVkYeCvulf3tWFcI9UCnmWqx64aiOBLzklG9G31VwMxlNmwc/ZFk2HzP+Tf3Bdbo=",
          "user" : "eb_yes",
          "iv" : "saRN5wBmmMCSh/N1"
+      },
+      {
+         "type" : "Post",
+         "message" : "e61avLsfvmbzYQBRJdtDwVwtuJ2ZJC5MmG3KzQNxEiyBlFwJifJEn4A8mFH6FWTtdiI=",
+         "wrappedkey" : "pUFMVaFK2SS0/Z4gSclFxX2Dcf6EbeS4xDizlsUVTZfG5QfNQUWH0kf/zjEYfzJalBju726nb9/TmJC3LHfb2YmXbvYicoLM2IoeYfsAOd3xI1oBveufqZt9R1XKK8DAeXZEVEXDdBWslTCgvH+XtRemyON1PLS6X7mcCX8cNEc=",
+         "user" : "eb_yes",
+         "iv" : "JH+v6KvRnXPT7LgA"
       }
    ]
 }

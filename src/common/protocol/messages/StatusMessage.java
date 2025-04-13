@@ -11,6 +11,7 @@ public class StatusMessage implements Message {
     private static String payload;
 
     public StatusMessage() {}
+    @SuppressWarnings("static-access")
     public StatusMessage(boolean status, String payload) {
         this.status = status;
         this.payload = payload;
@@ -19,6 +20,7 @@ public class StatusMessage implements Message {
     public boolean getStatus() { return status; }
     public static String getPayload() { return payload; }
 
+    @SuppressWarnings("static-access")
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
         if (!(obj instanceof JSONObject)) throw new InvalidObjectException("Expected JSONObject");

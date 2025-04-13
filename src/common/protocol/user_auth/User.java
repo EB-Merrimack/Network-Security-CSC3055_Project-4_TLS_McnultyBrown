@@ -4,7 +4,6 @@ import merrimackutil.json.JSONSerializable;
 import merrimackutil.json.types.JSONType;
 import merrimackutil.json.types.JSONObject;
 import java.io.InvalidObjectException;
-import java.util.Base64;
 
 public class User implements JSONSerializable {
     private String salt;

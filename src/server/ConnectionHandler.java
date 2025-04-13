@@ -4,7 +4,6 @@ package server;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 import common.protocol.Message;
@@ -16,7 +15,6 @@ import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
-import common.protocol.user_auth.User;
 import common.protocol.user_auth.UserDatabase;
 import merrimackutil.util.NonceCache;
 import common.Board;

@@ -4,7 +4,6 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.nio.ByteBuffer;
-import java.time.Instant;
 
 public class TOTP {
 

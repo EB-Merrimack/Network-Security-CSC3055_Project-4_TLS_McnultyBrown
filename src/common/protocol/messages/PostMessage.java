@@ -23,7 +23,7 @@ public class PostMessage implements Message {
 
     public PostMessage() {
         this.type = "post";
-        System.out.println("[DEBUG] PostMessage default constructor called.");
+     
     }
 
     public PostMessage(String user, String message, String wrappedkey, String iv) {
@@ -32,7 +32,6 @@ public class PostMessage implements Message {
         this.message = message;
         this.wrappedkey = wrappedkey;
         this.iv = iv;
-        System.out.println("[DEBUG] PostMessage constructed: user=" + user + ", iv=" + iv);
     }
 
     public String getUser() {
@@ -63,9 +62,6 @@ public class PostMessage implements Message {
             byte[] ivBytes = Base64.getDecoder().decode(getIv());
             byte[] cipherBytes = Base64.getDecoder().decode(getMessage());
 
-            System.out.println("[DEBUG] Decrypting payload...");
-            System.out.println("[DEBUG] IV (Base64): " + getIv());
-            System.out.println("[DEBUG] Ciphertext (Base64): " + getMessage());
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             GCMParameterSpec gcmSpec = new GCMParameterSpec(128, ivBytes);
@@ -75,31 +71,26 @@ public class PostMessage implements Message {
             byte[] plainBytes = cipher.doFinal(cipherBytes);
 
             String decrypted = new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
-            System.out.println("[DEBUG] Decrypted payload: " + decrypted);
 
             return decrypted;
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to decrypt payload: " + e.getMessage());
             throw new RuntimeException("Failed to decrypt payload", e);
         }
     }
 
     @Override
     public JSONType toJSONType() {
-        System.out.println("[DEBUG] Serializing PostMessage to JSON...");
         JSONObject obj = new JSONObject();
         obj.put("type", type);
         obj.put("user", user);
         obj.put("message", message);
         obj.put("wrappedkey", wrappedkey);
         obj.put("iv", iv);
-        System.out.println("[DEBUG] Serialized PostMessage: " + obj);
         return obj;
     }
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
-        System.out.println("[DEBUG] Deserializing JSON to PostMessage...");
         if (!(obj instanceof JSONObject)) {
             throw new InvalidObjectException("Expected JSONObject.");
         }
@@ -110,13 +101,10 @@ public class PostMessage implements Message {
         this.message = json.getString("message");
         this.wrappedkey = json.getString("wrappedkey");
         this.iv = json.getString("iv");
-
-        System.out.println("[DEBUG] Deserialized PostMessage: user=" + user + ", iv=" + iv);
     }
 
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
-        System.out.println("[DEBUG] Decoding JSONObject to PostMessage...");
         PostMessage decoded = new PostMessage(
             obj.getString("user"),
             obj.getString("message"),

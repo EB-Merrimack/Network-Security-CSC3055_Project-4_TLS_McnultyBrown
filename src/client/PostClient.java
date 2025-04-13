@@ -108,7 +108,7 @@ public class PostClient {
         if (response != null) {
             // Check the status and print the result accordingly
             if (response.getStatus()) {
-                System.out.println("[Message sent successfully: ") ;
+                System.out.println("Message sent successfully: ") ;
             } else {
                 System.out.println(" Failed to post message: " );
             }

@@ -1,19 +1,13 @@
 package common.protocol.user_auth;
 
 import common.protocol.messages.AuthenticateMessage;
-import merrimackutil.codec.Base32;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.KeySpec;
 import java.time.Instant;
 import java.util.Base64;
 
 public class AuthenticationHandler {
 
-    private static final boolean DEBUG = true;  // Set to false in production
+    private static final boolean DEBUG = false;  // Set to false in production
 
     public static boolean authenticate(AuthenticateMessage message) {
         try {
