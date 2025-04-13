@@ -1,16 +1,11 @@
 package common.protocol.user_creation;
 
-import merrimackutil.codec.Base32;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.UserDatabase;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 import org.bouncycastle.crypto.generators.SCrypt;
 
 import java.security.SecureRandom;
-import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Base64;

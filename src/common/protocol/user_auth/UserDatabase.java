@@ -4,7 +4,6 @@ import merrimackutil.json.*;
 import merrimackutil.json.types.*;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.util.HashMap;
