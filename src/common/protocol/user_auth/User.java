@@ -11,7 +11,7 @@ public class User implements JSONSerializable {
     private String pass;
     private String totpKey;
     private String user;
-    private static String pubkey;
+    private  String pubkey;
 
     public User() {}
 
@@ -28,8 +28,14 @@ public class User implements JSONSerializable {
     public String getPasswordHash() { return pass; } // ✅ Implemented
     public String getTotpKey() { return totpKey; }
     public String getUser() { return user; }
-    public static String getPubkey() { return pubkey; }
+    public  String getPubkey() { return pubkey; }
 
+    /**
+     * Deserialize a JSON object into a User instance.
+     *
+     * @param obj the JSON object to deserialize
+     * @throws InvalidObjectException if the object is not a JSON object
+     */
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
         if (!obj.isObject()) {
