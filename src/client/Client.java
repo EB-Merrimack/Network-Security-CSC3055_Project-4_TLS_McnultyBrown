@@ -223,12 +223,7 @@ try {
 }
     }
     private static void handleGet() throws Exception {
-    // Prompt password + OTP, reuse authenticateUser()
-    if (!authenticateUser()) {
-        System.out.println("Authentication failed.");
-        return;
-    }
-
+   
     // Load private key from Base64 string
     byte[] privKeyBytes = java.util.Base64.getDecoder().decode(privKey);
     KeyFactory keyFactory = KeyFactory.getInstance("ElGamal", "BC");
