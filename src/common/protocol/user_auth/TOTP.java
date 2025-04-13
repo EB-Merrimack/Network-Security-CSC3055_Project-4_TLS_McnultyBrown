@@ -4,11 +4,13 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.nio.ByteBuffer;
+import java.time.Instant;
 
 public class TOTP {
 
     private static final int OTP_LENGTH = 6;
-    
+    private static final int TIME_STEP = 30;  // Time step in seconds (TOTP standard is 30 seconds)
+
     /**
      * Generates a TOTP based on a secret and time index.
      *
