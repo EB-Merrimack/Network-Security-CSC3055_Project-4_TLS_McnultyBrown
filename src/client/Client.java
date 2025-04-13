@@ -45,6 +45,9 @@ public class Client {
 
     private static final Objects mapper = new Objects();
 
+    /**
+     * Prints the help menu.
+     */
     public static void usage() {
         System.out.println("usage:");
         System.out.println("  client --create --user <user> --host <host> --port <portnum>");
@@ -62,6 +65,11 @@ public class Client {
         System.exit(1);
     }
 
+    /**
+     * Process the command line arguments.
+     * @param args the array of command line arguments.
+     * @throws Exception if something goes wrong.
+     */
     public static void processArgs(String[] args) throws Exception {
      
         if (args.length == 0) {
@@ -154,6 +162,15 @@ public class Client {
         }
     }
 
+    /**
+     * Authenticate a user by prompting for a password and OTP, then
+     * performing a TLS handshake with the server, sending an AuthenticateMessage,
+     * and receiving a StatusMessage in response. If the status message is
+     * success, the function returns true; otherwise, it returns false.
+     * @return true if authentication is successful; false otherwise
+     * @throws Exception if an error occurs during TLS connection or message
+     * processing
+     */
     private static boolean authenticateUser() throws Exception {
             Console console = System.console();
 
@@ -272,6 +289,14 @@ try {
 }
 
 
+    /**
+     * Main entry point for the client program.
+     * If the --create flag is passed, this will create a new account on the server.
+     * If the --create flag is not passed, this will retrieve all posts from the server
+     * for the specified user and decrypt them using the user's ElGamal private key.
+     * @param args command line arguments
+     * @throws Exception if an error occurs while executing the program
+     */
     public static void main(String[] args) throws Exception {
         // Register Bouncy Castle provider
         Security.addProvider(new BouncyCastleProvider());

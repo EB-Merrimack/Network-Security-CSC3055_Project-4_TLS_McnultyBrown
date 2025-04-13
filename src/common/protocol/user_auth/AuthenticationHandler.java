@@ -9,6 +9,17 @@ public class AuthenticationHandler {
 
     private static final boolean DEBUG = false;  // Set to false in production
 
+    /**
+     * Authenticates a user using an AuthenticateMessage.
+     * 
+     * 1. Checks if the user exists.
+     * 2. Validates the password hash using SCrypt.
+     * 3. Validates the OTP using TOTP from the User object.
+     * 
+     * @param message the AuthenticateMessage to process
+     * @return true if the user is authenticated; otherwise, false.
+     * @throws Exception if an error occurs during authentication
+     */
     public static boolean authenticate(AuthenticateMessage message) {
         try {
             String username = message.getUser();
@@ -71,6 +82,14 @@ public class AuthenticationHandler {
         }
     }
 
+    /**
+     * Verifies a given OTP using the TOTP algorithm and a given Base64-encoded secret key.
+     * 
+     * @param base64Secret the Base64-encoded secret key
+     * @param otp the one-time password to verify
+     * @return true if the OTP is valid, false otherwise
+     * @throws Exception if an error occurs during verification
+     */
     private static boolean verifyTOTP(String base64Secret, String otp) {
         try {
             if (DEBUG) {

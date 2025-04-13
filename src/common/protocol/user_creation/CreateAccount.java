@@ -33,6 +33,17 @@ public class CreateAccount {
         }
     }
 
+    /**
+     * Creates a new user in the user database given a username, password, and public key.
+     * 
+     * @param username the username of the new user
+     * @param password the password of the new user
+     * @param publicKey the encoded public key of the new user
+     * @param userfile the file to load the user database from
+     * @return a StatusMessage with a boolean indicating success or failure and a message
+     *         containing the base64 encoded TOTP key if successful, or an error message
+     *         otherwise
+     */
     public static StatusMessage createAccount(String username, String password, String publicKey, String userfile) {
         try {
             // Load the user database from the file before doing anything else
@@ -49,12 +60,6 @@ public class CreateAccount {
             random.nextBytes(saltBytes);
             String salt = Base64.getEncoder().encodeToString(saltBytes);
     
-            // Hash password with PBKDF2 and salt
-            /*KeySpec spec = new PBEKeySpec(password.toCharArray(), saltBytes, 10000, 256);
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            byte[] hash = factory.generateSecret(spec).getEncoded();
-            String passwordHash = Base64.getEncoder().encodeToString(hash);
-    */
             
             byte[] hash = SCrypt.generate(password.getBytes(), saltBytes, 2048, 8, 1, 16);
             String passwordHash = Base64.getEncoder().encodeToString(hash);

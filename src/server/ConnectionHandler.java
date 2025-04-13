@@ -159,6 +159,16 @@ public class ConnectionHandler implements Runnable {
             
        
 
+        /**
+         * Handles a CreateMessage sent by the client. Creates a new user account using the
+         * username, password, and public key provided in the message, and saves the
+         * account information to the user database file specified in the
+         * Configuration. Sends a StatusMessage back to the client with a boolean indicating
+         * success or failure and a message containing the base64 encoded TOTP key if
+         * successful, or an error message otherwise.
+         * 
+         * @param msg the CreateMessage received from the client
+         */
     private void handleCreateMessage(Message msg) {
         try {
             System.out.println("[SERVER] Handling CreateMessage");
@@ -185,6 +195,10 @@ public class ConnectionHandler implements Runnable {
             e.printStackTrace();
         }
     }
+        /**
+         * Handles a PostMessage and adds the post to the board.
+         * @param postMsg the PostMessage to be handled
+         */
     private void handlePostMessage(PostMessage postMsg) {
         try {
             System.out.println("[SERVER] Handling PostMessage");

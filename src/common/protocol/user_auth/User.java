@@ -48,6 +48,12 @@ public class User implements JSONSerializable {
         this.pubkey = json.getString("pubkey");
     }
 
+    /**
+     * Converts the object to a JSON type.
+     *
+     * @return a JSON type either JSONObject or JSONArray.
+     * The returned JSONObject contains the type, salt, pass, totp-key, user, and pubkey fields.
+     */
     @Override
     public JSONType toJSONType() {
         JSONObject json = new JSONObject();

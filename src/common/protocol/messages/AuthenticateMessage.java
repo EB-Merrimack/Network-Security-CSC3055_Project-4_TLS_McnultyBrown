@@ -24,17 +24,37 @@ public class AuthenticateMessage implements Message {
         this.otp = otp;
     }
 
+    /**
+     * Returns the username associated with this authentication message.
+     * @return the username associated with this authentication message
+     */
     public String getUser() {
         return user;
     }
+
+/**
+ * Returns the password associated with this authentication message.
+ * @return the password associated with this authentication message
+ */
 
     public String getPass() {
         return pass;
     }
 
+    /**
+     * Returns the one-time password associated with this authentication message.
+     * @return the one-time password associated with this authentication message
+     */
     public String getOtp() {
         return otp;
     }
+
+/**
+ * Deserializes a JSON object into an AuthenticateMessage instance.
+ *
+ * @param obj the JSON object to deserialize
+ * @throws InvalidObjectException if the object is not a valid JSONObject
+ */
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
@@ -50,6 +70,10 @@ public class AuthenticateMessage implements Message {
      
     }
 
+    /**
+     * Converts the object to a JSON type.
+     * @return a JSON type either JSONObject or JSONArray.
+     */
     @Override
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
@@ -62,12 +86,23 @@ public class AuthenticateMessage implements Message {
         return obj;
     }
 
+    /**
+     * Gets the message type as a string.
+     * @return the message type as a string.
+     */
     @Override
     public String getType() {
     
         return "authenticate";
     }
 
+    /**
+     * Decodes a JSON object into an AuthenticateMessage instance.
+     *
+     * @param obj the JSON object to decode
+     * @return an AuthenticateMessage instance
+     * @throws InvalidObjectException if the object is not a valid JSONObject
+     */
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
         String user = obj.getString("user");
@@ -78,6 +113,10 @@ public class AuthenticateMessage implements Message {
         return new AuthenticateMessage(user, pass, otp);
     }
 
+    /**
+     * Returns a string representation of the object.
+     * @return a string representation of the object
+     */
     @Override
     public String toString() {
         return "[AuthenticateMessage] user=" + user + ", otp=" + otp;

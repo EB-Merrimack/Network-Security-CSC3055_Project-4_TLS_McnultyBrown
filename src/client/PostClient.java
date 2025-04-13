@@ -27,6 +27,27 @@ public class PostClient {
         channel.addMessageType(new StatusMessage());
     }
 
+/**
+ * Sends an encrypted message to a specified recipient.
+ *
+ * This method performs the following steps:
+ * 1. Requests the recipient's public key.
+ * 2. Receives and verifies the public key response.
+ * 3. Decodes the recipient's ElGamal public key.
+ * 4. Generates a 256-bit AES key for encryption.
+ * 5. Encrypts the message using AES/GCM/NoPadding.
+ * 6. Encrypts the AES key using the ElGamal public key (key wrapping).
+ * 7. Constructs and sends a PostMessage containing the encrypted message, 
+ *    wrapped key, and initialization vector.
+ * 8. Attempts to receive a status response, retrying if necessary.
+ * 9. Closes the channel after message transmission.
+ *
+ * @param user the username of the sender
+ * @param recvr the username of the recipient
+ * @param plaintext the message to be sent in plaintext
+ * @throws Exception if any error occurs during the encryption or message sending process
+ */
+
     public void sendMessage(String user, String recvr, String plaintext) throws Exception {
 
         // Step 1: Request recipient's public key

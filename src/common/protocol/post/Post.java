@@ -32,6 +32,10 @@ public class Post implements JSONSerializable {
         deserialize(obj);
     }
 
+    /**
+     * Returns the username associated with this post.
+     * @return the username associated with this post
+     */
     public String getUser() { 
         return user; 
     }
@@ -42,18 +46,35 @@ public class Post implements JSONSerializable {
  * @return the encrypted message as a String.
  */
 
+    /**
+     * Retrieves the message content of the post.
+     * 
+     * @return the encrypted message as a String.
+     */
     public String getMessage() { 
         return message; 
     }
 
+    /**
+     * Returns the wrapped key, which is the session key encrypted with the server's RSA key.
+     * @return the wrapped key as a Base64-encoded string
+     */
     public String getWrappedKey() { 
         return wrappedKey; 
     }
 
+    /**
+     * Returns the initialization vector used for AES encryption.
+     * @return the initialization vector as a Base64-encoded string
+     */
     public String getIv() { 
         return iv; 
     }
 
+    /**
+     * Gets the type of the post. This is used to determine which type of post it is (e.g. regular post, delete post, etc.)
+     * @return the type of the post as a string
+     */
     public String getType() {
         return type;  // Getter for the type
     }
@@ -63,6 +84,11 @@ public class Post implements JSONSerializable {
         return new PostMessage(user, message, wrappedKey, iv);
     }
 
+    /**
+     * Deserializes a JSON object into a Post instance.
+     * @param obj the JSON object to deserialize, expected to be a JSONObject.
+     * @throws InvalidObjectException if the object is not a JSONObject or if required fields are missing
+     */
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
         if (!obj.isObject()) {
@@ -79,6 +105,11 @@ public class Post implements JSONSerializable {
         this.type = postObj.getString("type");  // Deserialize type field
     }
 
+    /**
+     * Converts the object to a JSON type.
+     * @return a JSON type either JSONObject or JSONArray.
+     * The returned JSONObject contains the type, message, wrappedkey, user, and iv fields.
+     */
     @Override
     public JSONType toJSONType() {
         JSONObject postObj = new JSONObject();

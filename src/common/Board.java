@@ -27,15 +27,31 @@ public class Board implements JSONSerializable {
         System.out.println("[DEBUG] Board deserialization completed.");
     }
 
+    /**
+     * Adds a post to the board.
+     * @param post the post to add
+     */
     public void addPost(Post post) {
         posts.add(post);
         System.out.println("[DEBUG] Added post: " + post);
     }
 
+/**
+ * Retrieves the list of posts on the board.
+ * @return a list of posts currently on the board.
+ */
+
     public List<Post> getPosts() {
         System.out.println("[DEBUG] Retrieving posts, total posts: " + posts.size());
         return posts;
     }
+
+/**
+ * Converts the board to a JSON type.
+ * 
+ * @return a JSONObject representing the board, containing a "posts" field
+ *         which is a JSON representation of the posts on the board.
+ */
 
     @Override
     public JSONType toJSONType() {
@@ -49,6 +65,20 @@ public class Board implements JSONSerializable {
         System.out.println("[DEBUG] Board serialized to JSON: " + boardObj);
         return boardObj;
     }
+
+/**
+ * Loads the board data from a file and deserializes the posts.
+ * 
+ * Reads the JSON object from the specified board file, verifies the
+ * presence of the "posts" key, and converts the array of post JSON 
+ * objects into Post instances, adding them to the board's post list.
+ * If the file or key is not found, or if the key does not contain
+ * an array, appropriate error messages are printed.
+ * 
+ * Clears the existing posts before loading new ones.
+ * 
+ * Handles IOExceptions that may occur during file reading.
+ */
 
     public void loadFromFile() {
         System.out.println("[DEBUG] Loading board data from file: " + BOARD_FILE);
@@ -85,6 +115,16 @@ public class Board implements JSONSerializable {
     
     
     
+
+/**
+ * Deserializes a JSON object into the Board instance.
+ * 
+ * @param obj the JSON object to deserialize, expected to be a JSONObject containing the "posts" field.
+ * @throws InvalidObjectException if the object is not a JSONObject or if the "posts" field is missing.
+ * 
+ * Processes the "posts" field in the JSON object, which should be an array of post JSON objects,
+ * converts each JSON object into a Post instance, and adds them to the board's post list.
+ */
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
@@ -128,6 +168,15 @@ public void loadAndAddPost(Post newPost) {
     // Step 3: Save updated board to file
     saveToFile();
 }
+    /**
+     * Saves the board data to a file specified by BOARD_FILE.
+     * 
+     * Creates a PostWrapper instance to serialize the posts list as a JSONArray, and then
+     * uses JsonIO to write the formatted object to the file. Will overwrite the file if it
+     * already exists.
+     * 
+     * @see JsonIO#writeFormattedObject(JSONSerializable, File)
+     */
     public void saveToFile() {
         System.out.println("[DEBUG] Saving board data to file: " + BOARD_FILE);
         try {
@@ -152,12 +201,26 @@ public void loadAndAddPost(Post newPost) {
             }
         }
 
+        /**
+         * Converts the object to a JSON type.
+         * @return a JSON type either JSONObject or JSONArray.
+         * The returned JSONObject contains a single field, "posts", which is a JSONArray of
+         * Post JSONTypes.
+         */
         @Override
         public JSONType toJSONType() {
             JSONObject root = new JSONObject();
             root.put("posts", entries);
             return root;
         }
+
+/**
+ * This method is intended to deserialize a JSONType object into the PostWrapper instance.
+ * 
+ * @param obj the JSON object to deserialize.
+ * 
+ * Currently, this method is unused and does not perform any operation.
+ */
 
         @Override
         public void deserialize(JSONType obj) {

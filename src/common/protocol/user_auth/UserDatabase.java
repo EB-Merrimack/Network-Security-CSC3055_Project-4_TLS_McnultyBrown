@@ -20,6 +20,13 @@ public class UserDatabase {
             this.entries = entries;
         }
 
+        /**
+         * Converts the object to a JSON type.
+         * @return a JSON type either JSONObject or JSONArray.
+         * The returned JSONObject contains the type and entries fields.
+         * The type field is a string with the value "UserDBWrapper".
+         * The entries field is a JSONArray of User JSONTypes.
+         */
         @Override
         public JSONType toJSONType() {
             JSONObject root = new JSONObject();
@@ -27,20 +34,48 @@ public class UserDatabase {
             return root;
         }
 
+        /**
+         * Deserialize a JSON object into a UserDBWrapper instance.
+         * 
+         * @param obj the JSON object to deserialize
+         * @throws InvalidObjectException if the object is not a JSON object
+         */
         @Override
         public void deserialize(JSONType obj) {
             // unused
         }
     }
 
+/**
+ * Checks if the specified username exists in the userMap.
+ *
+ * @param username the username to check for existence
+ * @return true if the username exists in the userMap, false otherwise
+ */
+
     public static boolean containsKey(String username) {
         return userMap.containsKey(username);
     }
 
+        /**
+         * Adds a new user to the userMap.
+         * 
+         * @param username the username to associate with the given User
+         * @param newUser the User to store in the userMap
+         */
     public static void put(String username, User newUser) {
         userMap.put(username, newUser);
     }
 
+        /**
+         * Loads the users from a JSON file. If the file does not exist, a new HashMap is created.
+         * The file is expected to be a JSON object with a single field "entries" which is an array of
+         * User JSON objects. If the file is not a valid JSON object, an InvalidObjectException is thrown.
+         * The User objects are deserialized from the JSON objects and stored in the userMap.
+         * The number of users loaded is printed to the console.
+         * If an exception occurs while loading the users, an error message is printed to the console.
+         * @param userfile the path to the users.json file
+         */
     private static void loadUsers(String userfile) {
         try {
             File file = new File(userfile);
@@ -72,6 +107,12 @@ public class UserDatabase {
         }
     }
 
+        /**
+         * Saves the users in the userMap to a JSON file. If the file already exists, it is overwritten.
+         * The file is a JSON object with a single field "entries" which is an array of User JSON objects.
+         * If an exception occurs while saving the users, an error message is printed to the console.
+         * @param userfile the path to the users.json file
+         */
     private static void saveUsers(String userfile) {
         try {
             JSONArray entries = new JSONArray();
@@ -92,14 +133,33 @@ public class UserDatabase {
         loadUsers(userfile); // Delegate to the existing loadUsers method
     }
 
+        /**
+         * Saves the users in the userMap to a JSON file. If the file already exists, it is overwritten.
+         * The file is a JSON object with a single field "entries" which is an array of User JSON objects.
+         * If an exception occurs while saving the users, an error message is printed to the console.
+         * @param userfile the path to the users.json file
+         */
     public static void save(String userfile) {
         saveUsers(userfile); // Delegate to the existing saveUsers method
     }
+
+    /**
+     * Retrieves a User from the userMap based on the given username.
+     * 
+     * @param username the username of the User to retrieve
+     * @return the User object associated with the given username, or null if no such user exists
+     */
 
     public static User get(String username) {
         return userMap.get(username);
     }
 
+        /**
+         * Retrieves the public key associated with the given username.
+         * 
+         * @param username the username of the User to retrieve the public key for
+         * @return the public key associated with the given username, or null if no such user exists
+         */
     public static String getPubkey(String username) {
         return userMap.get(username).getPubkey();
     }

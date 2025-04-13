@@ -34,22 +34,44 @@ public class PostMessage implements Message {
         this.iv = iv;
     }
 
+    /**
+     * Returns the username associated with this post.
+     * @return the username associated with this post
+     */
     public String getUser() {
         return user;
     }
+
+/**
+ * Returns the message content of this post.
+ * @return the message content as a String
+ */
 
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Returns the wrapped key, which is the session key encrypted with the server's RSA key.
+     * @return the wrapped key as a Base64-encoded string
+     */
     public String getWrappedKey() {
         return wrappedkey;
     }
+
+    /**
+     * Returns the initialization vector (IV) associated with this post.
+     * @return the IV as a Base64-encoded string
+     */
 
     public String getIv() {
         return iv;
     }
 
+    /**
+     * Gets the message type as a string.
+     * @return the message type as a string.
+     */
     public String getType() {
         return type;
     }
@@ -78,6 +100,13 @@ public class PostMessage implements Message {
         }
     }
 
+/**
+ * Converts this PostMessage object to a JSON representation.
+ * 
+ * @return a JSONObject containing the serialized fields of this PostMessage, 
+ *         including type, user, message, wrappedkey, and iv.
+ */
+
     @Override
     public JSONType toJSONType() {
         JSONObject obj = new JSONObject();
@@ -88,6 +117,14 @@ public class PostMessage implements Message {
         obj.put("iv", iv);
         return obj;
     }
+
+
+/**
+ * Deserialize a JSON object into a PostMessage instance.
+ *
+ * @param obj the JSON object to deserialize
+ * @throws InvalidObjectException if the object is not a valid JSONObject or if required fields are missing
+ */
 
     @Override
     public void deserialize(JSONType obj) throws InvalidObjectException {
@@ -103,6 +140,12 @@ public class PostMessage implements Message {
         this.iv = json.getString("iv");
     }
 
+/**
+ * Decodes a JSON object into a PostMessage instance.
+ * @param obj the JSON object to decode, expected to be a JSONObject.
+ * @return a deserialized PostMessage instance.
+ * @throws InvalidObjectException if the object is not a JSONObject or if required fields are missing
+ */
     @Override
     public Message decode(JSONObject obj) throws InvalidObjectException {
         PostMessage decoded = new PostMessage(
