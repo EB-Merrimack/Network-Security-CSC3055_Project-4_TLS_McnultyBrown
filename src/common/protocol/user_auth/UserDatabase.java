@@ -4,7 +4,6 @@ import merrimackutil.json.*;
 import merrimackutil.json.types.*;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.util.HashMap;
@@ -67,7 +66,6 @@ public class UserDatabase {
                 userMap.put(user.getUser(), user);
             }
 
-            System.out.println("[UserDatabase] Loaded " + userMap.size() + " users.");
         } catch (Exception e) {
             System.err.println("[UserDatabase] Error loading users.json: " + e.getMessage());
         }
@@ -82,7 +80,6 @@ public class UserDatabase {
 
             UserDBWrapper db = new UserDBWrapper(entries);
             JsonIO.writeFormattedObject(db, new File(userfile));
-            System.out.println("[UserDatabase] Saved users to file.");
         } catch (IOException e) {
             System.err.println("[UserDatabase] Failed to save users: " + e.getMessage());
         }
@@ -101,6 +98,7 @@ public class UserDatabase {
         return userMap.get(username);
     }
 
+    @SuppressWarnings("static-access")
     public static String getPubkey(String username) {
         return userMap.get(username).getPubkey();
     }
@@ -110,18 +108,12 @@ public class UserDatabase {
         Object userfile = server.Configuration.getUsersFile();
         // Ensure userMap is loaded from the file
         if (userfile == null || userMap.isEmpty()) {
-            System.out.println("[UserDatabase] Loading users from file: " + userfile);
             loadUsers((String) userfile);
         }
 
-        // Debugging: log the check process
-        System.out.println("[UserDatabase] Checking if user exists: " + username);
-
         if (userMap.containsKey(username)) {
-            System.out.println("[UserDatabase] User " + username + " found.");
             return true;
         } else {
-            System.out.println("[UserDatabase] User " + username + " not found.");
             return false;
         }
     }
@@ -133,13 +125,11 @@ public class UserDatabase {
             // Ensure userMap is populated
             Object userfile = server.Configuration.getUsersFile();
             if (userfile == null || userMap == null || userMap.isEmpty()) {
-                System.out.println("[UserDatabase] Loading users from file: " + userfile);
                 loadUsers((String) userfile); // Load users into userMap
             }
 
             // Check if user exists
             if (!userMap.containsKey(username)) {
-                System.out.println("[UserDatabase] User not found: " + username);
                 return null;
             }
 
@@ -149,15 +139,13 @@ public class UserDatabase {
             String pubkey = UserDatabase.getPubkey(username);
 
             if (pubkey == null || pubkey.isEmpty()) {
-                System.out.println("[UserDatabase] Public key for user " + username + " is not available.");
-                return null;
+              return null;
             }
 
             // Return the Base64-encoded public key string
             return pubkey;
 
         } catch (Exception e) {
-            System.out.println("[UserDatabase] Error reading user public key: " + e.getMessage());
             return null;
         }
     }
