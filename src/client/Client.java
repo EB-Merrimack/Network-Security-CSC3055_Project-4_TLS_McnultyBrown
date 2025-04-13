@@ -240,11 +240,7 @@ try {
     channel.sendMessage(new GetMessage(user));
 
     Message response = channel.receiveMessage();
-    if (response instanceof StatusMessage) {
-        StatusMessage status = (StatusMessage) response;
-        System.out.println("Error: " + status.getPayload());
-        return;
-    }
+  
 
     if (!(response instanceof GetResponseMessage)) {
         System.out.println("Unexpected response from server.");
@@ -337,12 +333,13 @@ try {
                 System.out.println("Account created successfully.");
                 System.out.println("Private Key:\n" + privKeyEncoded);
 
+                @SuppressWarnings("static-access")
                 String totpKey = status.getPayload();
                 byte[] totpBytes = Base64.getDecoder().decode(totpKey);
                 String base32Totp = Base32.encodeToString(totpBytes, true); // no padding
                 System.out.println("Base 32 Key:\n" + base32Totp);
             } else {
-                System.out.println("Failed to create account: " + status.getPayload());
+                System.out.println("Failed to create account: ");
             }
         
             channel.closeChannel();
