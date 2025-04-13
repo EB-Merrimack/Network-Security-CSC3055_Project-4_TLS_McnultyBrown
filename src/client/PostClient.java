@@ -78,7 +78,7 @@ public class PostClient {
 
         // Step 7: Construct and send the PostMessage
         PostMessage post = new PostMessage(
-            user,
+            recvr,
             Base64.getEncoder().encodeToString(ciphertext),
             Base64.getEncoder().encodeToString(wrappedKey),
             Base64.getEncoder().encodeToString(iv)

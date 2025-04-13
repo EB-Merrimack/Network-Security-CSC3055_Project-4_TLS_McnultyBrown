@@ -16,6 +16,7 @@ import javax.net.ssl.SSLSocketFactory;
 import org.bouncycastle.util.Objects;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.security.Security;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import common.protocol.Message;
@@ -231,8 +232,9 @@ try {
     // Load private key from Base64 string
     byte[] privKeyBytes = java.util.Base64.getDecoder().decode(privKey);
     KeyFactory keyFactory = KeyFactory.getInstance("ElGamal", "BC");
-    PrivateKey privateKey = keyFactory.generatePrivate(new X509EncodedKeySpec(privKeyBytes));
-
+    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privKeyBytes);
+    PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+    
     // Set up TLS + ProtocolChannel
     SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
     SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
