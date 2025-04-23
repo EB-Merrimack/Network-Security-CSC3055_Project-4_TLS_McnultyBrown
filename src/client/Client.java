@@ -125,25 +125,6 @@ public class Client {
             }
             System.out.println("Creating account for user: " + user);
             // Create logic runs in main()
-        } else if (post) {
-            if (user == null || host == null || port == 0 || recvr == null || message == null) {
-                System.err.println("Error: Missing required arguments for --post.");
-                usage();
-            }
-            if (!authenticateUser()) {
-                System.out.println("Authentication failed.");
-                return;
-            }
-            System.out.println("Authenticated.");
-            System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
-        
-            // TLS and send message
-            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-            socket.startHandshake();
-        
-            PostClient postClient = new PostClient(socket);
-            postClient.sendMessage(user,recvr, message);
         } else if (get) {
             if (user == null || host == null || port == 0 || privKey == null) {
                 System.err.println("Error: Missing required arguments for --get.");
