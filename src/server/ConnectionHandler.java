@@ -10,14 +10,12 @@ import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.GetMessage;
-import common.protocol.messages.GetResponseMessage;
-import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
 import common.protocol.user_auth.UserDatabase;
 import merrimackutil.util.NonceCache;
-import common.protocol.post.Post;
+
 
 
 public class ConnectionHandler implements Runnable {
@@ -45,12 +43,11 @@ public class ConnectionHandler implements Runnable {
         this.channel = new ProtocolChannel(sock);
         this.channel.addMessageType(new common.protocol.user_creation.CreateMessage());
         this.channel.addMessageType(new common.protocol.messages.StatusMessage());
-        this.channel.addMessageType(new PostMessage());
+       
         this.channel.addMessageType(new AuthenticateMessage());
         this.channel.addMessageType(new PubKeyRequest());
-        this.channel.addMessageType(new PostMessage());
         this.channel.addMessageType(new GetMessage());
-        this.channel.addMessageType(new GetResponseMessage());
+      
         this.doDebug = doDebug;
 
         this.nonceCache = nonceCache;
