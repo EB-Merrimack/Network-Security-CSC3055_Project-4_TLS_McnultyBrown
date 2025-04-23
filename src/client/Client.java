@@ -20,8 +20,6 @@ import common.protocol.ProtocolChannel;
 
 import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.GetMessage;
-import common.protocol.messages.GetResponseMessage;
-import common.protocol.messages.PostMessage;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_creation.CreateMessage;
 import merrimackutil.cli.LongOption;
@@ -125,38 +123,8 @@ public class Client {
             }
             System.out.println("Creating account for user: " + user);
             // Create logic runs in main()
-        } else if (post) {
-            if (user == null || host == null || port == 0 || recvr == null || message == null) {
-                System.err.println("Error: Missing required arguments for --post.");
-                usage();
-            }
-            if (!authenticateUser()) {
-                System.out.println("Authentication failed.");
-                return;
-            }
-            System.out.println("Authenticated.");
-            System.out.println("Posting message from " + user + " to " + recvr + ": " + message);
-        
-            // TLS and send message
-            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-            SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-            socket.startHandshake();
-        
-            PostClient postClient = new PostClient(socket);
-            postClient.sendMessage(user,recvr, message);
-        } else if (get) {
-            if (user == null || host == null || port == 0 || privKey == null) {
-                System.err.println("Error: Missing required arguments for --get.");
-                usage();
-            }
-            if (!authenticateUser()) {
-                System.out.println("Authentication failed.");
-                return;
-            }
-            System.out.println("Authenticated.");
-            System.out.println("Retrieving posts for user: " + user);
-            handleGet();
-        } else {
+        } 
+     else {
             System.err.println("Error: No valid action specified.");
             usage();
         }
@@ -232,61 +200,8 @@ try {
     return false;
 }
     }
-    private static void handleGet() throws Exception {
    
-    // Load private key from Base64 string
-    byte[] privKeyBytes = java.util.Base64.getDecoder().decode(privKey);
-    KeyFactory keyFactory = KeyFactory.getInstance("ElGamal", "BC");
-    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privKeyBytes);
-    PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
-    
-    // Set up TLS + ProtocolChannel
-    SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    SSLSocket socket = (SSLSocket) factory.createSocket(host, port);
-    socket.startHandshake();
 
-    channel = new ProtocolChannel(socket);
-    channel.addMessageType(new GetMessage());
-    channel.addMessageType(new GetResponseMessage());
-    channel.addMessageType(new PostMessage());
-    channel.addMessageType(new StatusMessage());
-
-    // Send get message
-    channel.sendMessage(new GetMessage(user));
-
-    Message response = channel.receiveMessage();
-  
-
-    if (!(response instanceof GetResponseMessage)) {
-        System.out.println("Unexpected response from server.");
-        return;
-    }
-
-    // Process posts
-    GetResponseMessage getResp = (GetResponseMessage) response;
-    System.out.println("You have " + getResp.getPosts().size() + " message(s):\n");
-
-    for (PostMessage post : getResp.getPosts()) {
-        try {
-            // Unwrap AES key with ElGamal private key
-            byte[] wrappedKey = java.util.Base64.getDecoder().decode(post.getWrappedKey());
-            Cipher elgamal = Cipher.getInstance("ElGamal/None/PKCS1Padding", "BC");
-            elgamal.init(Cipher.DECRYPT_MODE, privateKey);
-            byte[] aesKeyBytes = elgamal.doFinal(wrappedKey);
-
-            // Decrypt the message
-            String plaintext = post.getDecryptedPayload(aesKeyBytes);
-
-            System.out.println("From: " + post.getUser());
-            System.out.println("Message: " + plaintext);
-            System.out.println("--------------");
-        } catch (Exception e) {
-            System.out.println("[Error decrypting post]: " + e.getMessage());
-        }
-    }
-
-    channel.closeChannel();
-}
 
 
     /**

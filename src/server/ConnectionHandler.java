@@ -10,15 +10,12 @@ import common.protocol.Message;
 import common.protocol.ProtocolChannel;
 import common.protocol.messages.AuthenticateMessage;
 import common.protocol.messages.GetMessage;
-import common.protocol.messages.GetResponseMessage;
-import common.protocol.messages.PostMessage;
 import common.protocol.messages.PubKeyRequest;
 import common.protocol.messages.StatusMessage;
 import common.protocol.user_auth.AuthenticationHandler;
 import common.protocol.user_auth.UserDatabase;
 import merrimackutil.util.NonceCache;
-import common.Board;
-import common.protocol.post.Post;
+
 
 
 public class ConnectionHandler implements Runnable {
@@ -29,7 +26,7 @@ public class ConnectionHandler implements Runnable {
     private String serviceName;
     private String secret;
     private byte[] sessionKey;
-    private static Board board = new Board();
+ 
 
     /**
      * Constructs a new connection handler for the given connection.
@@ -46,12 +43,11 @@ public class ConnectionHandler implements Runnable {
         this.channel = new ProtocolChannel(sock);
         this.channel.addMessageType(new common.protocol.user_creation.CreateMessage());
         this.channel.addMessageType(new common.protocol.messages.StatusMessage());
-        this.channel.addMessageType(new PostMessage());
+       
         this.channel.addMessageType(new AuthenticateMessage());
         this.channel.addMessageType(new PubKeyRequest());
-        this.channel.addMessageType(new PostMessage());
         this.channel.addMessageType(new GetMessage());
-        this.channel.addMessageType(new GetResponseMessage());
+      
         this.doDebug = doDebug;
 
         this.nonceCache = nonceCache;
@@ -74,7 +70,6 @@ public class ConnectionHandler implements Runnable {
        */
       private void runCommunication() {
         try {
-            board.loadFromFile();
             while (true) {
                 System.out.println("[DEBUG] Waiting to receive a message...");
                 Message msg = null;
@@ -116,37 +111,8 @@ public class ConnectionHandler implements Runnable {
             channel.sendMessage((Message) new StatusMessage(true, base64Key));
             System.out.println("[SERVER] Public key sent.");
 
-        } else if (msg.getType().equals("post")) {
-            // Handle PostMessage
-            System.out.println("[SERVER] Handling PostMessage");
-           handlePostMessage((PostMessage) msg);
-           return;
-        }
-          else if (msg instanceof GetMessage) {
-                GetMessage getMsg = (GetMessage) msg;
-                String username = getMsg.getUser();
-            
-                board.loadFromFile(); // ensure latest board
-            
-                // ✅ Step 1: Find all posts addressed to the requested user
-                List<Post> userPosts = new ArrayList<>();
-                for (Post post : board.getPosts()) {
-                    if (post.getUser().equals(username)) {
-                        userPosts.add(post);
-                    }
-                }
-            
-                // ✅ Step 2: Convert Post → PostMessage
-                List<PostMessage> converted = new ArrayList<>();
-                for (Post post : userPosts) {
-                    converted.add(post.toPostMessage()); // make sure to add this helper in Post.java
-                }
-            
-                // ✅ Step 3: Send response
-                GetResponseMessage response = new GetResponseMessage(converted);
-                channel.sendMessage(response);
-            
-        } else {
+
+          } else {
             System.out.println("[SERVER] Unknown or unsupported message type: " + msg.getType());
         }
 
@@ -199,31 +165,5 @@ public class ConnectionHandler implements Runnable {
          * Handles a PostMessage and adds the post to the board.
          * @param postMsg the PostMessage to be handled
          */
-    private void handlePostMessage(PostMessage postMsg) {
-        try {
-            System.out.println("[SERVER] Handling PostMessage");
-    
-            // reformat PostMessage to Post
-            String Type=postMsg.getType();
-            String User=postMsg.getUser();
-            String Message=postMsg.getMessage();
-            String WrappedKey=postMsg.getWrappedKey();
-            String IV=postMsg.getIv();
-    
-            Post post = new Post( User, Message, WrappedKey, IV,Type);
-            // Add post to board and save
-            board.addPost(post);
-            board.loadAndAddPost(post);
-    
-            channel.sendMessage(new StatusMessage(true, "Success!"));
-            System.out.println("[SERVER] Post successful.");
-            return;
-    
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-                channel.sendMessage(new StatusMessage(false, "Post failed due to server error."));
-    }
-    
-    
+
 }
