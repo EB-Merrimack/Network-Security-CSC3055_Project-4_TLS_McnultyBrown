@@ -3,5 +3,6 @@
   "port":5000,
   "keystore-file":"stores/keystore.jks",
   "keystore-pass":"test12345",
-  "video-dashboard-file":"board.json"
+  "board-file":"board.json",
+  "debug":true
 }
